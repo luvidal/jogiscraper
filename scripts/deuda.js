@@ -1,0 +1,27 @@
+import * as nav from './_helpers.js'
+
+export const deuda = async (req, res) => {
+    const { rut, claveunica } = req.body
+    let page
+
+    try {
+        page = await nav.iniBrowser()
+
+        await nav.goto(page, 'https://conocetudeuda.cmfchile.cl/informe-deudas/622/w3-contents.html')
+        await nav.claveunica(page, rut, claveunica, '#linkCU')
+        await nav.sleep(2)
+
+        const base64 = await nav.forceDownloadPdfAsBase64(page, 'a.btn-descargar')
+        if (!base64) {
+            return res.status(502).json({ msg: 'CMF error', error: 'No PDF received' })
+        }
+
+        return res.status(200).json({ msg: 'ok', data: base64 })
+
+    } catch (err) {
+        return res.status(500).json({ msg: 'Internal error SII', error: err?.message || err })
+
+    } finally {
+        await nav.endBrowser(page)
+    }
+}

@@ -1,7 +1,7 @@
 import * as nav from './_helpers.js'
 
-export const carpeta = async (req, res) => {
-    const { rut, claveunica } = req.body
+export const declaracion = async (req, res) => {
+    const { rut, claveunica, year } = req.body
     let page
 
     try {
@@ -11,18 +11,11 @@ export const carpeta = async (req, res) => {
         await nav.claveunica(page, rut, claveunica, '#myHref')
 
         await nav.goto(page, 'https://www4.sii.cl/consultaestadof22ui/#!/default')
-        await nav.clickBtn(page, 'input[value="Continuar"]')
+        await nav.selectByLabel(page, 'select[data-ng-model="vm.selectedOption"]', year)
+        await nav.clickNav(page, 'button[ng-click="vm.Consultar()"]')
+        await nav.sleep(2)
 
-        const { name, email, company } = nav.getRandomPerson()
-        await nav.typeField(page, '#d_nombre', name)
-        await nav.typeField(page, '#d_email', email)
-        await page.select('#frm_instituciones', '999')
-        await nav.typeField(page, '#txtInstitucion', company)
-        await nav.clickBtn(page, '#chkautorizo')
-        await nav.clickNav(page, 'input[value="Enviar"]')
-
-        const base64 = await nav.popupBase64(page, 'input[name="guardarPdf"]')
-
+        const base64 = await nav.getScreenBase64(page)
         if (!base64) {
             return res.status(502).json({ msg: 'SII error', error: 'No PDF received' })
         }

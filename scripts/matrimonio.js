@@ -44,9 +44,6 @@ export async function matrimonio(req, res) {
     return res.status(200).json({ msg: 'ok', data: base64 })
 
   } catch (err) {
-    return res.status(500).json({
-      msg: 'Internal error contacting Khipu',
-      error: err.message || err,
-    })
+    return res.status(500).json({ msg: 'Internal error contacting Khipu', error: err.message || err })
   }
 }
