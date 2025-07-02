@@ -1,6 +1,10 @@
 import express from 'express'
 import dotenv from 'dotenv'
 import rateLimit from 'express-rate-limit'
+import morgan from 'morgan'
+import rfs from 'rotating-file-stream'
+import fs from 'fs'
+import { Writable } from 'stream'
 
 import { matrimonio } from './scripts/matrimonio.js'
 import { carpeta } from './scripts/carpeta.js'
@@ -13,13 +17,44 @@ dotenv.config()
 const app = express()
 app.use(express.json())
 
-// JSON responses by default
+// Ensure logs/ folder exists
+const logDir = './logs'
+if (!fs.existsSync(logDir)) fs.mkdirSync(logDir)
+
+// Rotating log streams
+const accessLogStream = rfs.createStream('access.log', {
+  interval: '1d',
+  path: logDir,
+  maxFiles: 30,
+  compress: 'gzip'
+})
+
+const errorLogStream = rfs.createStream('error.log', {
+  interval: '1d',
+  path: logDir,
+  maxFiles: 30,
+  compress: 'gzip'
+})
+
+const errorLog = new Writable({
+  write(chunk, _enc, next) {
+    errorLogStream.write(chunk)
+    next()
+  }
+})
+
+// Access logging
+app.use(morgan(':date[iso] :status :method :url :remote-addr - :response-time ms', {
+  stream: accessLogStream
+}))
+
+// Always return JSON
 app.use((req, res, next) => {
   res.setHeader('Content-Type', 'application/json')
   next()
 })
 
-// Rate limiting (30 requests per minute per IP)
+// Rate limiting
 const limiter = rateLimit({
   windowMs: 60_000,
   max: 30,
@@ -28,30 +63,34 @@ const limiter = rateLimit({
 })
 app.use(limiter)
 
-// Require X-Internal-Key on all routes except /
+// Auth + method enforcement
 app.use((req, res, next) => {
-  if (req.path === '/') return next()
-  if (req.headers['x-internal-key'] !== process.env.INTERNAL_API_KEY) {
-    console.warn(`Unauthorized request from ${req.ip}`)
+  if (req.path === '/' || req.path === '/github-webhook') return next()
+
+  if (req.method !== 'POST') {
+    const msg = `[${new Date().toISOString()}] ${req.ip} - Blocked ${req.method} to ${req.path}\n`
+    console.warn(msg.trim())
+    errorLog.write(msg)
+    return res.status(405).json({ error: 'Method Not Allowed' })
+  }
+
+  const key = req.headers['x-internal-key']
+  if (key !== process.env.INTERNAL_API_KEY) {
+    const msg = `[${new Date().toISOString()}] ${req.ip} - Unauthorized access to ${req.path}\n`
+    console.warn(msg.trim())
+    errorLog.write(msg)
     return res.status(401).json({ error: 'Unauthorized' })
   }
+
   next()
 })
 
-// Routes
+// Health check
 app.get('/', (req, res) => {
-  res.setHeader('Content-Type', 'text/plain')
-  res.send('jogiscraper is running!')
+  res.json({ status: 'ok', app: 'jogiscraper' })
 })
 
-app.post('/matrimonio', matrimonio)
-app.post('/carpeta', carpeta)
-app.post('/cotizaciones', cotizaciones)
-app.post('/declaracion', declaracion)
-app.post('/deuda', deuda)
-app.post('/formulario22', formulario22)
-
-// GitHub webhook bypasses auth
+// GitHub webhook
 app.post('/github-webhook', async (req, res) => {
   console.log('✅ GitHub webhook triggered')
   const { exec } = await import('child_process')
@@ -61,6 +100,14 @@ app.post('/github-webhook', async (req, res) => {
   })
 })
 
-// Start server
+// Routes
+app.post('/matrimonio', matrimonio)
+app.post('/carpeta', carpeta)
+app.post('/cotizaciones', cotizaciones)
+app.post('/declaracion', declaracion)
+app.post('/deuda', deuda)
+app.post('/formulario22', formulario22)
+
+// Start
 const port = 3000
 app.listen(port, () => console.log(`jogiscraper ready on http://localhost:${port}`))
