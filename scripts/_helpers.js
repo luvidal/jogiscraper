@@ -213,3 +213,16 @@ export async function getScreenBase64(page) {
     const buffer = await page.screenshot({ fullPage: true, type: 'png' })
     return buffer.toString('base64')
 }
+
+export function missingParams(res, params) {
+    const missing = Object.entries(params)
+        .filter(([_, v]) => !v)
+        .map(([k]) => k.toUpperCase())
+
+    if (missing.length) {
+        res.status(400).json({ msg: `Falta(n): ${missing.join(', ')}` })
+        return true
+    }
+
+    return false
+}

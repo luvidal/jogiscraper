@@ -1,7 +1,8 @@
 const nodotnslash = s => (s || '').replace(/[.-]/g, '')
 
 export async function matrimonio(req, res) {
-  const { rut, documento } = typeof req.body === 'object' && req.body !== null ? req.body : {}
+  const { rut, documento } = req.body
+  if (nav.missingParams(res, { rut, documento })) return
 
   if (!rut || !documento) {
     return res.status(400).json({ msg: 'Missing rut or documento' })

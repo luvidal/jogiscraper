@@ -2,8 +2,9 @@ import * as nav from './_helpers.js'
 
 export const deuda = async (req, res) => {
     const { rut, claveunica } = req.body
-    let page
+    if (nav.missingParams(res, { rut, claveunica })) return
 
+    let page
     try {
         page = await nav.iniBrowser()
 
