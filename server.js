@@ -2,7 +2,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 import rateLimit from 'express-rate-limit'
 import morgan from 'morgan'
-import rfs from 'rotating-file-stream'
+import { createStream } from 'rotating-file-stream'
 import fs from 'fs'
 import { Writable } from 'stream'
 
@@ -22,14 +22,14 @@ const logDir = './logs'
 if (!fs.existsSync(logDir)) fs.mkdirSync(logDir)
 
 // Rotating log streams
-const accessLogStream = rfs.createStream('access.log', {
+const accessLogStream = createStream('access.log', {
   interval: '1d',
   path: logDir,
   maxFiles: 30,
   compress: 'gzip'
 })
 
-const errorLogStream = rfs.createStream('error.log', {
+const errorLogStream = createStream('error.log', {
   interval: '1d',
   path: logDir,
   maxFiles: 30,
