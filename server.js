@@ -11,33 +11,35 @@ dotenv.config()
 const app = express()
 app.use(express.json())
 
-app.get('/', async (req, res) => {
+// Set JSON response header on all routes
+app.use((req, res, next) => {
+  res.setHeader('Content-Type', 'application/json')
+  next()
+})
+
+// Auth middleware (skip "/")
+app.use((req, res, next) => {
+  if (req.path === '/') return next()
+
+  const key = req.headers['x-internal-key']
+  if (key !== process.env.INTERNAL_API_KEY) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+
+  next()
+})
+
+app.get('/', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain') // override for /
   res.send('jogiscraper is running!')
 })
 
-app.post('/matrimonio', async (req, res) => {
-  await matrimonio(req, res)
-})
-
-app.post('/carpeta', async (req, res) => {
-  await carpeta(req, res)
-})
-
-app.post('/cotizaciones', async (req, res) => {
-  await cotizaciones(req, res)
-})
-
-app.post('/declaracion', async (req, res) => {
-  await declaracion(req, res)
-})
-
-app.post('/deuda', async (req, res) => {
-  await deuda(req, res)
-})
-
-app.post('/formulario22', async (req, res) => {
-  await formulario22(req, res)
-})
+app.post('/matrimonio', matrimonio)
+app.post('/carpeta', carpeta)
+app.post('/cotizaciones', cotizaciones)
+app.post('/declaracion', declaracion)
+app.post('/deuda', deuda)
+app.post('/formulario22', formulario22)
 
 const port = 3000
 app.listen(port, () => console.log(`jogiscraper ready on http://localhost:${port}`))
