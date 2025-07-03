@@ -1,4 +1,4 @@
-const nodotnslash = s => (s || '').replace(/[.-]/g, '')
+const clean = s => (s || '').replace(/[.-]/g, '')
 
 export async function matrimonio(req, res) {
   const { rut, documento } = req.body
@@ -6,9 +6,9 @@ export async function matrimonio(req, res) {
 
   const body = JSON.stringify({
     RequestData: {
-      RolUnicoNacionalCertificate: nodotnslash(rut),
-      RolUnicoNacionalApplicant: nodotnslash(rut),
-      DocumentNumberApplicant: nodotnslash(documento),
+      RolUnicoNacionalCertificate: clean(rut),
+      RolUnicoNacionalApplicant: clean(rut),
+      DocumentNumberApplicant: clean(documento),
     }
   })
 
