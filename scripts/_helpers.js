@@ -220,7 +220,7 @@ export function missingParams(res, params) {
         .map(([k]) => k.toUpperCase())
 
     if (missing.length) {
-        res.status(400).json({ msg: `Falta(n): ${missing.join(', ')}` })
+        res.status(400).json({ success: false, msg: `Falta(n): ${missing.join(', ')}` })
         return true
     }
 
