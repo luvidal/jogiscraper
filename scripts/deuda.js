@@ -14,13 +14,13 @@ export const deuda = async (req, res) => {
 
         const base64 = await nav.forceDownloadPdfAsBase64(page, 'a.btn-descargar')
         if (!base64) {
-            return res.status(502).json({ msg: 'CMF error', error: 'No PDF received' })
+            return res.status(502).json({ success: false, msg: 'Error in Deuda', error: 'No PDF received' })
         }
 
-        return res.status(200).json({ msg: 'ok', data: base64 })
+        return res.status(200).json({ success: true, msg: 'Deuda OK', data: base64 })
 
     } catch (err) {
-        return res.status(500).json({ msg: 'Internal error SII', error: err?.message || err })
+        return res.status(500).json({ success: false, msg: 'Error in Deuda', error: err?.message || err })
 
     } finally {
         await nav.endBrowser(page)

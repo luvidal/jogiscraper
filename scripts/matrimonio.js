@@ -40,11 +40,11 @@ export async function matrimonio(req, res) {
     const base64 = json?.Data?.CertificadoMatrimonio?.Documento
 
     if (!base64) {
-      return res.status(502).json({ msg: 'Khipu error', error: json?.Error || json })
+      return res.status(502).json({ success: false, msg: 'Error in Matrimonio', error: json?.Error || json })
     }
-    return res.status(200).json({ msg: 'ok', data: base64 })
+    return res.status(200).json({ success: true, msg: 'Matrimonio OK', data: base64 })
 
   } catch (err) {
-    return res.status(500).json({ msg: 'Internal error contacting Khipu', error: err.message || err })
+    return res.status(500).json({ success: false, msg: 'Error in Matrimonio', error: err.message || err })
   }
 }

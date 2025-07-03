@@ -25,13 +25,13 @@ export const carpeta = async (req, res) => {
         const base64 = await nav.popupBase64(page, 'input[name="guardarPdf"]')
 
         if (!base64) {
-            return res.status(502).json({ msg: 'SII error', error: 'No PDF received' })
+            return res.status(502).json({ success: false, msg: 'Error in Carpeta', error: 'No PDF received' })
         }
 
-        return res.status(200).json({ msg: 'ok', data: base64 })
+        return res.status(200).json({ success: true, msg: 'Carpeta OK', data: base64 })
 
     } catch (err) {
-        return res.status(500).json({ msg: 'Internal error SII', error: err?.message || err })
+        return res.status(500).json({ success: false, msg: 'Error in Carpeta', error: err?.message || err })
 
     } finally {
         await nav.endBrowser(page)
