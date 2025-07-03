@@ -4,22 +4,12 @@ export async function matrimonio(req, res) {
   const { rut, documento } = req.body
   if (nav.missingParams(res, { rut, documento })) return
 
-  if (!rut || !documento) {
-    return res.status(400).json({ msg: 'Missing rut or documento' })
-  }
-
-  rut = nodotnslash(rut)
-  documento = nodotnslash(documento)
-
-  const callback = `https://jogi.cl/api/v1/webhooks/khipu/matrimonio/${rut}`
-
   const body = JSON.stringify({
     RequestData: {
-      RolUnicoNacionalCertificate: rut,
-      RolUnicoNacionalApplicant: rut,
-      DocumentNumberApplicant: documento,
-    },
-    callback,
+      RolUnicoNacionalCertificate: nodotnslash(rut),
+      RolUnicoNacionalApplicant: nodotnslash(rut),
+      DocumentNumberApplicant: nodotnslash(documento),
+    }
   })
 
   try {
