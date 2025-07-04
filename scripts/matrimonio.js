@@ -1,8 +1,10 @@
-const clean = s => (s || '').replace(/[.-]/g, '')
+import * as nav from './_helpers.js'
 
 export async function matrimonio(req, res) {
   const { rut, documento } = req.body
   if (nav.missingParams(res, { rut, documento })) return
+
+  const clean = s => (s || '').replace(/[.-]/g, '')
 
   const body = JSON.stringify({
     RequestData: {
