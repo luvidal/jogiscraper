@@ -3,8 +3,12 @@ import fs from 'fs'
 import path from 'path'
 import puppeteer from 'puppeteer-extra'
 import StealthPlugin from 'puppeteer-extra-plugin-stealth'
+import AnonymizeUA from 'puppeteer-extra-plugin-anonymize-ua'
 
 puppeteer.use(StealthPlugin())
+puppeteer.use(AnonymizeUA({
+    customFn: ua => ua.replace('HeadlessChrome/', 'Chrome/')
+}))
 const userDataMap = new WeakMap()
 
 export async function iniBrowser() {
@@ -13,15 +17,18 @@ export async function iniBrowser() {
 
     const r = () => Math.floor(Math.random() * 80)
     const viewport = { width: 1024 + r(), height: 768 + r() }
+    const proxyHost = process.env.DECODO_HOST
+    const proxyPort = 10001 + Math.floor(Math.random() * 7)
 
     const args = [
+        `--proxy-server=http://${proxyHost}:${proxyPort}`,
         `--window-size=${viewport.width},${viewport.height}`,
         '--start-maximized',
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--lang=es-CL,es',
         '--timezone=America/Santiago',
-        '--disable-blink-features=AutomationControlled'
+        '--disable-blink-features=AutomationControlled',
     ]
 
     const browser = await puppeteer.launch({
@@ -31,17 +38,28 @@ export async function iniBrowser() {
         args,
         userDataDir,
         ignoreHTTPSErrors: true,
-        defaultViewport: null
+        defaultViewport: null,
     })
 
     const page = await browser.newPage()
+    await page.authenticate({
+        username: process.env.DECODO_USER,
+        password: process.env.DECODO_PASS,
+    });
     userDataMap.set(page, userDataDir)
 
     await page.setUserAgent(process.env.BROWSER_UA)
     await page.setViewport(viewport)
+    await page.setExtraHTTPHeaders({ 'accept-language': 'es-CL,es;q=0.9' })
 
+    await page.emulateTimezone('America/Santiago')
     await page.evaluateOnNewDocument(() => {
         Object.defineProperty(navigator, 'webdriver', { get: () => undefined })
+        Object.defineProperty(navigator, 'languages', { get: () => ['es-CL', 'es'] })
+        Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3] })
+        navigator.mediaDevices = {
+            getUserMedia: () => Promise.reject(new Error('Not implemented'))
+        }
     })
 
     return page

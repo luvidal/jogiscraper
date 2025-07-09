@@ -8,7 +8,6 @@ export const nomatrimonio = async (req, res) => {
     let page
     try {
         page = await nav.iniBrowser()
-
         await nav.goto(page, 'https://solicitudeswebrc.srcei.cl/InfoNoMat/web/init.srcei')
         await nav.clickBtn(page, '#idCheckAceptaTerminos')
         await nav.claveunica2(page, rut, claveunica, '#idBtnEnviarMat')
