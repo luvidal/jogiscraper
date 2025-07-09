@@ -7,6 +7,7 @@ import fs from 'fs'
 import { Writable } from 'stream'
 
 import { matrimonio } from './scripts/matrimonio.js'
+import { nomatrimonio } from './scripts/nomatrimonio.js'
 import { carpeta } from './scripts/carpeta.js'
 import { cotizaciones } from './scripts/cotizaciones.js'
 import { declaracion } from './scripts/declaracion.js'
@@ -102,6 +103,7 @@ app.post('/github-webhook', async (req, res) => {
 
 // Routes
 app.post('/matrimonio', matrimonio)
+app.post('/nomatrimonio', nomatrimonio)
 app.post('/carpeta', carpeta)
 app.post('/cotizaciones', cotizaciones)
 app.post('/declaracion', declaracion)

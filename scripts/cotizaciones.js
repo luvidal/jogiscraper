@@ -1,4 +1,5 @@
 import * as nav from './_helpers.js'
+import * as cpt from './_recaptcha.js'
 
 export const cotizaciones = async (req, res) => {
     const { rut, claveunica } = req.body
@@ -9,7 +10,7 @@ export const cotizaciones = async (req, res) => {
         page = await nav.iniBrowser()
 
         await nav.goto(page, 'https://webafiliados.afc.cl/WUI.AAP.OVIRTUAL/Default.aspx')
-        await nav.solveRecaptcha(page)
+        await cpt.solveRecaptcha(page)
         await nav.claveunica(page, rut, claveunica, '#btnCU')
 
         await nav.goto(page, 'https://webafiliados.afc.cl/WUI.AAP.OVIRTUAL/WebAfiliados/Certificados/Certificados.aspx')
