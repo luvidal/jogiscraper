@@ -39,9 +39,11 @@ app.post('/github-webhook', async (_req, res) => {
   console.log('✅ GitHub webhook triggered')
   const { exec } = await import('child_process')
   exec('bash /home/ubuntu/jogiscraper/update.sh', (err, stdout, stderr) => {
+    console.log('📤 STDOUT:', stdout)
+    console.error('📥 STDERR:', stderr)
     if (err) {
-      console.error('❌ exec error:', stderr)
-      return res.status(500).json({ error: stderr })
+      console.error('❌ EXEC ERROR:', err)
+      return res.status(500).json({ error: stderr || err.message })
     }
     res.json({ output: stdout.trim() })
   })
