@@ -1,0 +1,7 @@
+export { matrimonio } from './matrimonio.js'
+export { nomatrimonio } from './nomatrimonio.js'
+export { carpeta } from './carpeta.js'
+export { cotizaciones } from './cotizaciones.js'
+export { declaracion } from './declaracion.js'
+export { deuda } from './deuda.js'
+export { formulario22 } from './formulario22.js'
