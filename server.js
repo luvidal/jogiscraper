@@ -37,11 +37,12 @@ const protect = (handler) => (req, res, next) => {
 // Webhook (no auth)
 app.post('/github-webhook', async (_req, res) => {
   console.log('✅ GitHub webhook triggered')
-  const { exec } = await import('child_process')
-  exec('./update.sh', (err, stdout, stderr) => {
-    if (err) return res.status(500).json({ error: stderr })
-    res.json({ output: stdout.trim() })
-  })
+  res.json({ ok: true })
+  // const { exec } = await import('child_process')
+  // exec('./update.sh', (err, stdout, stderr) => {
+  //   if (err) return res.status(500).json({ error: stderr })
+  //   res.json({ output: stdout.trim() })
+  // })
 })
 
 // Public health check
