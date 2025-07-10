@@ -13,6 +13,7 @@ import { formulario22 } from './scripts/formulario22.js'
 
 dotenv.config()
 const app = express()
+app.set('trust proxy', true)
 app.use(express.json())
 
 // Logging
@@ -38,7 +39,7 @@ const protect = (handler) => (req, res, next) => {
 app.post('/github-webhook', async (_req, res) => {
   console.log('✅ GitHub webhook triggered')
   const { exec } = await import('child_process')
-  exec('bash /home/ubuntu/jogiscraper/update.sh', (err, stdout, stderr) => {
+  exec('bash ./update.sh', (err, stdout, stderr) => {
     if (err) {
       console.error('❌ exec error:', stderr)
       return res.status(500).json({ error: stderr })
