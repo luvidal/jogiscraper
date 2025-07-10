@@ -38,13 +38,14 @@ const protect = (handler) => (req, res, next) => {
 // Webhook (no auth)
 app.post('/github-webhook', async (_req, res) => {
   console.log('✅ GitHub webhook triggered')
+  res.json({ ok: true }) // respond early to avoid 502
+
   const { exec } = await import('child_process')
-  exec('bash ./update.sh', (err, stdout, stderr) => {
-    if (err) {
-      console.error('❌ exec error:', stderr)
-      return res.status(500).json({ error: stderr })
-    }
-    res.json({ output: stdout.trim() })
+  exec('bash /home/ubuntu/jogiscraper/update.sh', {
+    env: { ...process.env, HOME: '/home/ubuntu' }
+  }, (err, stdout, stderr) => {
+    console.log('📤 STDOUT:', stdout)
+    if (err) console.error('❌ EXEC ERROR:', stderr || err)
   })
 })
 
