@@ -38,17 +38,14 @@ const protect = (handler) => (req, res, next) => {
 app.post('/github-webhook', async (_req, res) => {
   console.log('✅ GitHub webhook triggered')
   const { exec } = await import('child_process')
-  exec('bash /home/ubuntu/jogiscraper/update.sh', { env: { ...process.env, HOME: '/home/ubuntu' } }, (err, stdout, stderr) => {
-    console.log('📤 STDOUT:', stdout)
-    console.error('📥 STDERR:', stderr)
+  exec('bash /home/ubuntu/jogiscraper/update.sh', (err, stdout, stderr) => {
     if (err) {
-      console.error('❌ EXEC ERROR:', err)
-      return res.status(500).json({ error: stderr || err.message })
+      console.error('❌ exec error:', stderr)
+      return res.status(500).json({ error: stderr })
     }
     res.json({ output: stdout.trim() })
   })
 })
-
 
 // Public health check
 app.get('/', (_, res) => res.json({ status: 'ok', app: 'jogiscraper' }))
