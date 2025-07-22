@@ -4,7 +4,7 @@ import morgan from 'morgan'
 import fs from 'fs'
 import { spawn } from 'child_process'
 import { createStream } from 'rotating-file-stream'
-import * as scripts from './scripts/index.js'
+import * as scripts from './index.js'
 
 dotenv.config()
 const app = express()
