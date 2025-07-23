@@ -18,7 +18,7 @@ export const cotizaciones = async (req, res) => {
         await nav.clickBtn(page, '#btnAcordcotacred')
         await nav.clickBtn(page, '#contentPlaceHolder_btnCotAcred')
 
-        const base64 = await nav.forceDownloadPdfAsBase64(page, '#btnDescargaCotPagadas')
+        const base64 = await nav.pdf2base64(page, '#btnDescargaCotPagadas')
         if (!base64) {
             return res.status(502).json({ success: false, msg: 'Error in Cotizaciones', error: 'No PDF received' })
         }

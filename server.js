@@ -34,6 +34,9 @@ app.post('/github', (_req, res) => {
 // health
 app.get('/', (_, res) => res.json({ status: 'ok', app: 'jogiscraper' }))
 
+//test
+app.get('/test', scripts.test)
+
 // routes
 const protect = (handler) => (req, res, next) => {
   if (req.headers['x-internal-key'] !== process.env.INTERNAL_API_KEY) {

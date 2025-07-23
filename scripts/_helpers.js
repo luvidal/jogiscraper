@@ -11,17 +11,14 @@ puppeteer.use(AnonymizeUA({
 }))
 const userDataMap = new WeakMap()
 
-export async function iniBrowser() {
+export async function iniBrowser(withProxy = true) {
     const tmpBase = path.join(os.tmpdir(), 'puppeteer-profile-')
     const userDataDir = fs.mkdtempSync(tmpBase)
 
     const r = () => Math.floor(Math.random() * 80)
     const viewport = { width: 1024 + r(), height: 768 + r() }
-    const proxyHost = process.env.DECODO_HOST
-    const proxyPort = 10001 + Math.floor(Math.random() * 7)
 
     const args = [
-        `--proxy-server=http://${proxyHost}:${proxyPort}`,
         `--window-size=${viewport.width},${viewport.height}`,
         '--start-maximized',
         '--no-sandbox',
@@ -31,8 +28,15 @@ export async function iniBrowser() {
         '--disable-blink-features=AutomationControlled',
     ]
 
+    if (withProxy) {
+        const proxyHost = process.env.DECODO_HOST
+        const proxyPort = 10001 + Math.floor(Math.random() * 7)
+        args.unshift(`--proxy-server=http://${proxyHost}:${proxyPort}`)
+    }
+
+    const isDev = process.env.ENVIRONMENT === 'development'
     const browser = await puppeteer.launch({
-        headless: process.env.ENVIRONMENT === 'development' ? false : 'new',
+        headless: isDev ? false : 'new',
         executablePath: process.env.BROWSER_PATH,
         slowMo: 50,
         args,
@@ -42,7 +46,12 @@ export async function iniBrowser() {
     })
 
     const page = await browser.newPage()
-    await page.authenticate({
+    page.setDefaultNavigationTimeout(60000)
+    page.setDefaultTimeout(60000)
+
+
+    if (isDev) page.on('console', msg => { console.log('[browser]', msg.text()) })
+    if (withProxy) await page.authenticate({
         username: process.env.DECODO_USER,
         password: process.env.DECODO_PASS,
     });
@@ -91,7 +100,7 @@ export function sleep(seconds = 1) {
     return new Promise(res => setTimeout(res, ms + jitter))
 }
 
-const waitVisible = (page, selector, timeout = 10000) =>
+const waitVisible = (page, selector, timeout = 60000) =>
     page.waitForSelector(selector, { visible: true, timeout })
 
 export async function typeField(page, selector, value) {
@@ -116,7 +125,7 @@ export async function clickNav(page, selector) {
     await waitVisible(page, selector)
     await sleep(1)
     await Promise.all([
-        page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 20000 }),
+        page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 60000 }),
         page.click(selector)
     ])
     await sleep(1)
@@ -166,34 +175,42 @@ export async function claveunica2(page, rut, pwd, selector) {
     await sleep(2)
 }
 
-export async function forceDownloadPdfAsBase64(page, selector, timeout = 10000) {
-    const downloadDir = fs.mkdtempSync(path.join(os.tmpdir(), 'puppeteer-downloads-'))
+export async function pdf2base64(page, selector, timeout = 15000) {
+    const tmpBase = path.join(os.tmpdir(), 'puppeteer-downloads-')
+    const downloadDir = fs.mkdtempSync(tmpBase)
+    console.log('[pdf2base64] 🟡 Download dir:', downloadDir)
 
-    const client = await page.createCDPSession()
+    // CDP for download interception
+    const client = await page.target().createCDPSession()
     await client.send('Page.setDownloadBehavior', {
         behavior: 'allow',
         downloadPath: downloadDir
     })
 
     const before = new Set(fs.readdirSync(downloadDir))
-    await page.click(selector)
+    console.log('[pdf2base64] 🖱️ Clicking selector:', selector)
+    await clickBtn(page, selector)
 
-    const file = await waitForFile(downloadDir, before, timeout)
+    const file = await waitForFile(downloadDir, before, timeout).catch(() => null)
+    if (!file) throw new Error('❌ No PDF was downloaded')
+
     const filePath = path.join(downloadDir, file)
     const base64 = fs.readFileSync(filePath).toString('base64')
 
     fs.rmSync(downloadDir, { recursive: true, force: true })
+    console.log('[pdf2base64] ✅ PDF read and encoded as base64')
     return base64
 }
 
-function waitForFile(dir, beforeSet, timeout) {
+function waitForFile(dir, beforeSet, timeout = 60000) {
+    console.log('⏳ Waiting for download. Files in dir:', fs.readdirSync(dir))
     return new Promise((resolve, reject) => {
         const deadline = Date.now() + timeout
         const check = () => {
             const after = fs.readdirSync(dir)
             const diff = after.find(f => !beforeSet.has(f))
             if (diff) return resolve(diff)
-            if (Date.now() > deadline) return reject(new Error('Download timeout'))
+            if (Date.now() > deadline) return reject(new Error(`Download timeout after ${timeout / 1000} seconds`))
             setTimeout(check, 300)
         }
         check()

@@ -12,7 +12,7 @@ export const deuda = async (req, res) => {
         await nav.claveunica(page, rut, claveunica, '#linkCU')
         await nav.sleep(2)
 
-        const base64 = await nav.forceDownloadPdfAsBase64(page, 'a.btn-descargar')
+        const base64 = await nav.pdf2base64(page, 'a.btn-descargar')
         if (!base64) {
             return res.status(502).json({ success: false, msg: 'Error in Deuda', error: 'No PDF received' })
         }

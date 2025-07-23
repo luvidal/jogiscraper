@@ -12,11 +12,12 @@ export const formulario22 = async (req, res) => {
         await nav.claveunica(page, rut, claveunica, '#myHref')
 
         await nav.goto(page, 'https://www4.sii.cl/consultaestadof22ui/#!/default')
-        await nav.selectByLabel(page, 'select[data-ng-model="vm.selectedOption"]', year)
-        await nav.clickNav(page, 'button[ng-click="vm.Consultar()"]')
-        await nav.clickNav(page, 'button[ng-click="vm.f22Compacto()"]')
+        await nav.sleep(3)
+        await nav.selectByLabel(page, 'select[data-ng-model="vm.selectedOption"]', year) // select year
+        await nav.clickNav(page, 'button[ng-click="vm.Consultar()"]') // trigger year
+        await nav.clickNav(page, 'button[ng-click="vm.f22Compacto()"]') // button: 'Ver Formulario 22 Compacto'
 
-        const base64 = await nav.forceDownloadPdfAsBase64(page, 'button[ng-click="vm.crearPdf()"]')
+        const base64 = await nav.pdf2base64(page, 'button[ng-click="vm.crearPdf()"]') // button: 'Ver Compacto en PDF'
         if (!base64) {
             return res.status(502).json({ success: false, msg: 'Error in Formulario22', error: 'No PDF received' })
         }
