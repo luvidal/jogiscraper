@@ -1,3 +1,4 @@
+import * as nav from './_helpers.js'
 
 const poll = async (params) => {
     const apiKey = process.env.TWOCAPTCHA_API_KEY
@@ -10,7 +11,7 @@ const poll = async (params) => {
     if (!id || id.startsWith('ERROR')) throw new Error(`2Captcha submission error: ${id}`)
 
     while (true) {
-        await sleep(10)
+        await nav.sleep(8, 0)
         const { status, request } = await (await fetch(`http://2captcha.com/res.php?key=${apiKey}&action=get&id=${id}&json=1`)).json()
         if (status === 1) return request
         if (request !== 'CAPCHA_NOT_READY') throw new Error(request)
@@ -33,11 +34,5 @@ export const solveRecaptcha = async (page) => {
         }
     }, token)
 
-    await sleep(3)
-}
-
-export function sleep(seconds = 1) {
-    const ms = seconds * 1000
-    const jitter = Math.floor(Math.random() * 1000)
-    return new Promise(res => setTimeout(res, ms + jitter))
+    await nav.sleep(3, 0)
 }

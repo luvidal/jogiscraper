@@ -1,4 +1,5 @@
 import * as nav from './_helpers.js'
+import * as b64 from './_base64.js'
 
 export const deuda = async (req, res) => {
     const { rut, claveunica } = req.body
@@ -7,12 +8,10 @@ export const deuda = async (req, res) => {
     let page
     try {
         page = await nav.iniBrowser()
-
         await nav.goto(page, 'https://conocetudeuda.cmfchile.cl/informe-deudas/622/w3-contents.html')
         await nav.claveunica(page, rut, claveunica, '#linkCU')
-        await nav.sleep(2)
+        const base64 = await b64.pdfcdp(page, 'a.btn-descargar')
 
-        const base64 = await nav.pdf2base64(page, 'a.btn-descargar')
         if (!base64) {
             return res.status(502).json({ success: false, msg: 'Error in Deuda', error: 'No PDF received' })
         }

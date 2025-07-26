@@ -6,9 +6,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 import AnonymizeUA from 'puppeteer-extra-plugin-anonymize-ua'
 
 puppeteer.use(StealthPlugin())
-puppeteer.use(AnonymizeUA({
-    customFn: ua => ua.replace('HeadlessChrome/', 'Chrome/')
-}))
+puppeteer.use(AnonymizeUA({ customFn: ua => ua.replace('HeadlessChrome/', 'Chrome/') }))
 const userDataMap = new WeakMap()
 
 export async function iniBrowser(withProxy = true) {
@@ -20,7 +18,6 @@ export async function iniBrowser(withProxy = true) {
 
     const args = [
         `--window-size=${viewport.width},${viewport.height}`,
-        '--start-maximized',
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--lang=es-CL,es',
@@ -29,8 +26,8 @@ export async function iniBrowser(withProxy = true) {
     ]
 
     if (withProxy) {
-        const proxyHost = process.env.DECODO_HOST
-        const proxyPort = 10001 + Math.floor(Math.random() * 7)
+        const proxyHost = process.env.OXYLABS_HOST
+        const proxyPort = process.env.OXYLABS_PORT
         args.unshift(`--proxy-server=http://${proxyHost}:${proxyPort}`)
     }
 
@@ -42,18 +39,22 @@ export async function iniBrowser(withProxy = true) {
         args,
         userDataDir,
         ignoreHTTPSErrors: true,
-        defaultViewport: null,
     })
 
     const page = await browser.newPage()
-    page.setDefaultNavigationTimeout(60000)
-    page.setDefaultTimeout(60000)
-
+    await page.setDefaultNavigationTimeout(60000)
+    await page.setDefaultTimeout(60000)
 
     if (isDev) page.on('console', msg => { console.log('[browser]', msg.text()) })
+    page.on('dialog', async dialog => {
+        console.log('[dialog]', dialog.message())
+        await dialog.accept()
+    })
+    console.log('Using auth →', process.env.OXYLABS_USER, process.env.OXYLABS_PASS ? '****' : '(no pass)')
+
     if (withProxy) await page.authenticate({
-        username: process.env.DECODO_USER,
-        password: process.env.DECODO_PASS,
+        username: process.env.OXYLABS_USER,
+        password: process.env.OXYLABS_PASS,
     });
     userDataMap.set(page, userDataDir)
 
@@ -94,31 +95,22 @@ export async function endBrowser(page) {
     }
 }
 
-export function sleep(seconds = 1) {
-    const ms = seconds * 1000
-    const jitter = Math.floor(Math.random() * 1000)
-    return new Promise(res => setTimeout(res, ms + jitter))
+export function sleep(seconds = 1, delta = 0.5) {
+    const ms = seconds * 1000;
+    const deltaMs = delta * 1000;
+    const jitter = (Math.random() * 2 - 1) * deltaMs;
+    const finalMs = Math.max(0, ms + jitter);
+    return new Promise(res => setTimeout(res, finalMs));
 }
 
 const waitVisible = (page, selector, timeout = 60000) =>
     page.waitForSelector(selector, { visible: true, timeout })
 
-export async function typeField(page, selector, value) {
-    await waitVisible(page, selector)
-    await page.focus(selector)
-    await page.click(selector, { clickCount: 3 })
-    await page.keyboard.press('Backspace')
-    for (const char of value) {
-        await page.keyboard.type(char)
-        await sleep(0.06)
-    }
-}
-
 export async function clickBtn(page, selector) {
     await waitVisible(page, selector)
     await sleep(1)
     await page.click(selector)
-    await sleep(1)
+    await sleep(2, 0)
 }
 
 export async function clickNav(page, selector) {
@@ -128,7 +120,18 @@ export async function clickNav(page, selector) {
         page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 60000 }),
         page.click(selector)
     ])
-    await sleep(1)
+    await sleep(3, 0)
+}
+
+export async function typeField(page, selector, value) {
+    await waitVisible(page, selector)
+    await page.focus(selector)
+    await page.click(selector, { clickCount: 3 })
+    await page.keyboard.press('Backspace')
+    for (const char of value) {
+        await page.keyboard.type(char)
+        await sleep(0.1, 0.05)
+    }
 }
 
 export async function selectByLabel(page, selector, label) {
@@ -145,16 +148,16 @@ export async function selectByLabel(page, selector, label) {
 }
 
 export async function goto(page, url, options = {}, retries = 1) {
-    const merged = { waitUntil: 'domcontentloaded', timeout: 20000, ...options }
+    const merged = { waitUntil: 'domcontentloaded', timeout: 20000, ...options };
     for (let i = 0; i <= retries; i++) {
         try {
-            await page.goto(url, merged)
-            await sleep(1)
-            return
+            await page.goto(url, merged);
+            await sleep(3, 0);
+            return;
         } catch (err) {
-            if (i === retries) throw err
-            console.warn(`⚠️ Retry ${i + 1}: Failed to navigate to ${url}`)
-            await sleep(2)
+            console.warn(`⚠️ Navigation failed for ${url}. Attempt ${i + 1} of ${retries + 1}. Error: ${err.message}`);
+            if (i === retries) throw err;
+            await sleep(1, 0);
         }
     }
 }
@@ -164,7 +167,6 @@ export async function claveunica(page, rut, pwd, selector) {
     await typeField(page, '#uname', rut)
     await typeField(page, '#pword', pwd)
     await clickNav(page, '#login-submit')
-    await sleep(2)
 }
 
 export async function claveunica2(page, rut, pwd, selector) {
@@ -172,54 +174,6 @@ export async function claveunica2(page, rut, pwd, selector) {
     await typeField(page, '#cu_inputRUN', rut)
     await typeField(page, '#cu_inputClaveUnica', pwd)
     await clickNav(page, '#cu_btnIngresar')
-    await sleep(2)
-}
-
-export async function pdf2base64(page, selector, timeout = 15000) {
-    const tmpBase = path.join(os.tmpdir(), 'puppeteer-downloads-')
-    const downloadDir = fs.mkdtempSync(tmpBase)
-    console.log('[pdf2base64] 🟡 Download dir:', downloadDir)
-
-    // CDP for download interception
-    const client = await page.target().createCDPSession()
-    await client.send('Page.setDownloadBehavior', {
-        behavior: 'allow',
-        downloadPath: downloadDir
-    })
-
-    const before = new Set(fs.readdirSync(downloadDir))
-    console.log('[pdf2base64] 🖱️ Clicking selector:', selector)
-    await clickBtn(page, selector)
-
-    const file = await waitForFile(downloadDir, before, timeout).catch(() => null)
-    if (!file) throw new Error('❌ No PDF was downloaded')
-
-    const filePath = path.join(downloadDir, file)
-    const base64 = fs.readFileSync(filePath).toString('base64')
-
-    fs.rmSync(downloadDir, { recursive: true, force: true })
-    console.log('[pdf2base64] ✅ PDF read and encoded as base64')
-    return base64
-}
-
-function waitForFile(dir, beforeSet, timeout = 60000) {
-    console.log('⏳ Waiting for download. Files in dir:', fs.readdirSync(dir))
-    return new Promise((resolve, reject) => {
-        const deadline = Date.now() + timeout
-        const check = () => {
-            const after = fs.readdirSync(dir)
-            const diff = after.find(f => !beforeSet.has(f))
-            if (diff) return resolve(diff)
-            if (Date.now() > deadline) return reject(new Error(`Download timeout after ${timeout / 1000} seconds`))
-            setTimeout(check, 300)
-        }
-        check()
-    })
-}
-
-export async function getScreenBase64(page) {
-    const buffer = await page.screenshot({ fullPage: true, type: 'png' })
-    return buffer.toString('base64')
 }
 
 export function missingParams(res, params) {
