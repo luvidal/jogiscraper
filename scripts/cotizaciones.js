@@ -8,7 +8,7 @@ export const cotizaciones = async (req, res) => {
 
     let page
     try {
-        page = await nav.iniBrowser()
+        page = await nav.iniBrowser(false)
         await nav.goto(page, 'https://webafiliados.afc.cl/WUI.AAP.OVIRTUAL/Default.aspx')
         await cpt.solveRecaptcha(page)
         await nav.claveunica(page, rut, claveunica, '#btnCU')
