@@ -3,7 +3,7 @@ import * as nav from './_helpers.js'
 export const test = async (req, res) => {
     let browser
     try {
-        const page = await nav.iniBrowser()
+        const page = await nav.iniBrowser(false)
         browser = page.browser()
         const ip = await page.evaluate(async () => {
             const res = await fetch('https://api.ipify.org?format=json')

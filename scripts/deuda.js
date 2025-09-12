@@ -7,7 +7,7 @@ export const deuda = async (req, res) => {
 
     let page
     try {
-        page = await nav.iniBrowser()
+        page = await nav.iniBrowser(false)
         await nav.goto(page, 'https://conocetudeuda.cmfchile.cl/informe-deudas/622/w3-contents.html')
         await nav.claveunica(page, rut, claveunica, '#linkCU')
         const base64 = await b64.pdfcdp(page, 'a.btn-descargar')

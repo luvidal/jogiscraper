@@ -9,7 +9,7 @@ puppeteer.use(StealthPlugin())
 puppeteer.use(AnonymizeUA({ customFn: ua => ua.replace('HeadlessChrome/', 'Chrome/') }))
 const userDataMap = new WeakMap()
 
-export async function iniBrowser(withProxy = true) {
+export async function iniBrowser(withProxy = false) {
     const tmpBase = path.join(os.tmpdir(), 'puppeteer-profile-')
     const userDataDir = fs.mkdtempSync(tmpBase)
 
