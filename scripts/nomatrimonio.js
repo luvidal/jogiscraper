@@ -2,8 +2,8 @@ import * as nav from './_helpers.js'
 import * as aws from './_awsinbox.js'
 
 export const nomatrimonio = async (req, res) => {
-    const { rut, claveunica } = req.body
-    if (nav.missingParams(res, { rut, claveunica })) return
+    const { rut, claveunica, username, email } = req.body
+    if (nav.missingParams(res, { rut, claveunica, username, email })) return
 
     let page
     try {
