@@ -4,6 +4,11 @@ node_modules/
 # Env secrets
 .env
 
+# Database
+*.db
+*.db-shm
+*.db-wal
+
 # PM2 logs
 logs/
 
