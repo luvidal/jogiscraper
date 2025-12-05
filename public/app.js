@@ -84,7 +84,6 @@ form.addEventListener('submit', async (e) => {
 
     const payload = {
         rut: formData.get('rut'),
-        documento: formData.get('documento'),
         claveunica: formData.get('claveunica')
     };
 
