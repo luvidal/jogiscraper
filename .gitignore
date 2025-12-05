@@ -20,4 +20,4 @@ npm-debug.log*
 Thumbs.db
 
 # examples
-curls.txt
+curls.txt/.claude/

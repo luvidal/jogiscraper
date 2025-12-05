@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/Users/avd/GitHub/jogiscraper/**)",
+      "Write(/Users/avd/GitHub/jogiscraper/**)",
+      "Edit(/Users/avd/GitHub/jogiscraper/**)",
+      "Bash(git:*)",
+      "Bash(npm run:*)",
+      "Bash(npm install:*)",
+      "Bash(npm test:*)",
+      "Bash(npm start:*)",
+      "Bash(export PATH:*)",
+      "Bash(cd /Users/avd/GitHub/jogiscraper:*)",
+      "Bash(ls:*)",
+      "Bash(pwd:*)"
+    ],
+    "ask": [],
+    "deny": [
+      "Bash(rm -rf /:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)"
+    ]
+  }
+}
