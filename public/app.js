@@ -34,42 +34,38 @@ function checkUrlParams() {
 // Check URL params on page load
 checkUrlParams();
 
-// RUT formatting
+// RUT formatting function (defined globally so it can be used after localStorage load)
+function formatRut(input) {
+    let value = input.value.replace(/[^0-9kK]/g, ''); // Remove everything except numbers and K
+
+    if (value.length === 0) {
+        input.value = '';
+        return;
+    }
+
+    // Separate body and verification digit
+    let body = value.slice(0, -1);
+    let verifier = value.slice(-1).toUpperCase();
+
+    // Format body with dots
+    if (body.length > 0) {
+        body = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    // Combine with hyphen if we have a verifier
+    if (value.length > 1) {
+        input.value = `${body}-${verifier}`;
+    } else {
+        input.value = body;
+    }
+}
+
+// RUT formatting - attach input listener
 const rutInput = document.getElementById('rut');
 if (rutInput) {
-    const formatRut = (input) => {
-        let value = input.value.replace(/[^0-9kK]/g, ''); // Remove everything except numbers and K
-
-        if (value.length === 0) {
-            input.value = '';
-            return;
-        }
-
-        // Separate body and verification digit
-        let body = value.slice(0, -1);
-        let verifier = value.slice(-1).toUpperCase();
-
-        // Format body with dots
-        if (body.length > 0) {
-            body = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        }
-
-        // Combine with hyphen if we have a verifier
-        if (value.length > 1) {
-            input.value = `${body}-${verifier}`;
-        } else {
-            input.value = body;
-        }
-    };
-
     rutInput.addEventListener('input', (e) => {
         formatRut(e.target);
     });
-
-    // Format on page load if there's an existing value
-    if (rutInput.value) {
-        formatRut(rutInput);
-    }
 }
 
 // Toggle password visibility
@@ -376,6 +372,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const savedValue = loadFromLocalStorage(fieldName);
             if (savedValue) {
                 input.value = savedValue;
+
+                // Format RUT after loading from localStorage
+                if (fieldName === 'rut') {
+                    formatRut(input);
+                }
             }
 
             // Save on blur (except claveunica)
