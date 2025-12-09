@@ -73,9 +73,9 @@ function validateRut(rut) {
 
 // RUT formatting function (defined globally so it can be used after localStorage load)
 function formatRut(input) {
-    // Get cursor position before formatting
+    // Save cursor position
     const cursorPosition = input.selectionStart;
-    const oldValue = input.value;
+    const oldLength = input.value.length;
 
     // Remove everything except numbers and K
     let value = input.value.replace(/[^0-9kK]/g, '');
@@ -112,10 +112,16 @@ function formatRut(input) {
 
     input.value = formatted;
 
-    // Try to maintain cursor position
-    if (formatted.length >= cursorPosition) {
-        input.setSelectionRange(cursorPosition, cursorPosition);
-    }
+    // Adjust cursor position based on the change in length
+    const newLength = formatted.length;
+    const lengthDiff = newLength - oldLength;
+    let newCursorPosition = cursorPosition + lengthDiff;
+
+    // Make sure cursor stays within bounds
+    if (newCursorPosition < 0) newCursorPosition = 0;
+    if (newCursorPosition > newLength) newCursorPosition = newLength;
+
+    input.setSelectionRange(newCursorPosition, newCursorPosition);
 }
 
 // Documento formatting function (XXX.XXX.XXX)
