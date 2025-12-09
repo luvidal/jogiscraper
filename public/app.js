@@ -132,6 +132,9 @@ function populateServiceSelect(documents) {
 // Load documents on page load
 loadDocuments();
 
+// Store form data for submission after confirmation
+let pendingFormData = null;
+
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -141,8 +144,9 @@ form.addEventListener('submit', async (e) => {
         return;
     }
 
+    // Store form data and show confirmation modal
     const formData = new FormData(form);
-    const payload = {
+    pendingFormData = {
         rut: formData.get('rut'),
         claveunica: formData.get('claveunica'),
         documento: formData.get('documento'),
@@ -152,9 +156,22 @@ form.addEventListener('submit', async (e) => {
 
     // Add carpeta fields if carpeta service is selected
     if (selectedServices.has('carpeta')) {
-        payload.username = formData.get('username');
-        payload.email = formData.get('email');
+        pendingFormData.username = formData.get('username');
+        pendingFormData.email = formData.get('email');
     }
+
+    // Show confirmation modal
+    openConfirmationModal();
+});
+
+async function submitRequest(deliveryMethod) {
+    if (!pendingFormData) return;
+
+    // Add delivery method to payload
+    const payload = {
+        ...pendingFormData,
+        deliveryMethod
+    };
 
     setLoading(true);
     resultDiv.innerHTML = '';
@@ -180,8 +197,9 @@ form.addEventListener('submit', async (e) => {
         showResult('error', 'Error de conexión', null, error.message);
     } finally {
         setLoading(false);
+        pendingFormData = null;
     }
-});
+}
 
 function setLoading(isLoading) {
     submitBtn.disabled = isLoading;
@@ -282,7 +300,20 @@ function closeModal() {
     document.body.style.overflow = '';
 }
 
-// Modal event listeners
+function openConfirmationModal() {
+    const modal = document.getElementById('confirmationModal');
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeConfirmationModal() {
+    const modal = document.getElementById('confirmationModal');
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+    pendingFormData = null;
+}
+
+// Results modal event listeners
 const modal = document.getElementById('resultsModal');
 const modalClose = document.querySelector('.modal-close');
 
@@ -295,9 +326,37 @@ modal.addEventListener('click', (e) => {
     }
 });
 
+// Confirmation modal event listeners
+const confirmationModal = document.getElementById('confirmationModal');
+const modalCloseConfirm = document.querySelector('.modal-close-confirm');
+const deliveryOptions = document.querySelectorAll('.delivery-option');
+
+modalCloseConfirm.addEventListener('click', closeConfirmationModal);
+
+// Close modal when clicking outside
+confirmationModal.addEventListener('click', (e) => {
+    if (e.target === confirmationModal) {
+        closeConfirmationModal();
+    }
+});
+
+// Handle delivery option selection
+deliveryOptions.forEach(option => {
+    option.addEventListener('click', async () => {
+        const method = option.dataset.method;
+        closeConfirmationModal();
+        await submitRequest(method);
+    });
+});
+
 // Close modal with Escape key
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('show')) {
-        closeModal();
+    if (e.key === 'Escape') {
+        if (modal.classList.contains('show')) {
+            closeModal();
+        }
+        if (confirmationModal.classList.contains('show')) {
+            closeConfirmationModal();
+        }
     }
 });

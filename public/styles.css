@@ -472,6 +472,39 @@ footer {
     color: #555;
 }
 
+.delivery-options {
+    display: flex;
+    gap: 15px;
+    flex-direction: column;
+}
+
+.delivery-option {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.delivery-option:hover {
+    background: #e8f4f8;
+    border-color: #0e7490;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(14, 116, 144, 0.2);
+}
+
+.delivery-option svg {
+    color: #0e7490;
+    flex-shrink: 0;
+}
+
 @media (max-width: 640px) {
     header h1 {
         font-size: 2rem;

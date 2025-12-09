@@ -78,6 +78,36 @@
         </footer>
     </div>
 
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>¿Cómo desea recibir los documentos?</h2>
+                <button class="modal-close-confirm" aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; color: #555;">Seleccione el método de entrega para sus documentos:</p>
+                <div class="delivery-options">
+                    <button type="button" class="delivery-option" data-method="email">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        <span>Por Email</span>
+                    </button>
+                    <button type="button" class="delivery-option" data-method="download">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>Descargar Ahora</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Results Modal -->
     <div id="resultsModal" class="modal">
         <div class="modal-content">
