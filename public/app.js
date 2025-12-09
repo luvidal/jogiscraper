@@ -136,8 +136,7 @@ loadDocuments();
 document.addEventListener('DOMContentLoaded', () => {
     const requiredInputs = document.querySelectorAll('input[required], select[required]');
     requiredInputs.forEach(input => {
-        input.addEventListener('invalid', (e) => {
-            e.preventDefault();
+        input.addEventListener('invalid', () => {
             if (input.validity.valueMissing) {
                 input.setCustomValidity('Por favor, complete este campo');
             } else if (input.validity.typeMismatch && input.type === 'email') {
