@@ -34,6 +34,35 @@ function checkUrlParams() {
 // Check URL params on page load
 checkUrlParams();
 
+// RUT formatting
+const rutInput = document.getElementById('rut');
+if (rutInput) {
+    rutInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/[^0-9kK]/g, ''); // Remove everything except numbers and K
+
+        if (value.length === 0) {
+            e.target.value = '';
+            return;
+        }
+
+        // Separate body and verification digit
+        let body = value.slice(0, -1);
+        let verifier = value.slice(-1).toUpperCase();
+
+        // Format body with dots
+        if (body.length > 0) {
+            body = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        // Combine with hyphen if we have a verifier
+        if (value.length > 1) {
+            e.target.value = `${body}-${verifier}`;
+        } else {
+            e.target.value = body;
+        }
+    });
+}
+
 // Toggle password visibility
 const togglePasswordBtn = document.querySelector('.toggle-password');
 const claveUnicaInput = document.getElementById('claveunica');
