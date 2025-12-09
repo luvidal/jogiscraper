@@ -195,17 +195,21 @@ function setLoading(isLoading) {
 }
 
 function showMultipleResults(results, requestId = null) {
-    resultDiv.className = 'result';
-    resultDiv.style.display = 'block';
+    const modal = document.getElementById('resultsModal');
+    const modalBody = document.getElementById('modalBody');
 
     const successCount = results.filter(r => r.success).length;
     const totalCount = results.length;
 
-    let html = `<h3>Resultados (${successCount}/${totalCount} exitosos)</h3>`;
+    let html = `<div class="modal-summary">
+        <h3>Resumen de Resultados</h3>
+        <p><strong>${successCount}</strong> de <strong>${totalCount}</strong> documentos procesados exitosamente</p>`;
 
     if (requestId) {
-        html += `<p style="font-size: 0.9rem; color: #666; margin-top: 5px;">ID de Solicitud: <strong>${requestId}</strong></p>`;
+        html += `<p style="margin-top: 8px; font-size: 0.9rem;">ID de Solicitud: <strong>#${requestId}</strong></p>`;
     }
+
+    html += `</div>`;
 
     results.forEach(result => {
         const serviceDoc = documentsData.find(d => d.script === result.service);
@@ -213,23 +217,23 @@ function showMultipleResults(results, requestId = null) {
 
         html += `<div class="result-item ${result.success ? 'success' : 'error'}">`;
         html += `<h4>${result.success ? '✓' : '✗'} ${serviceName}</h4>`;
-        html += `<p>${result.msg || (result.success ? 'Completado' : 'Error')}</p>`;
+        html += `<p>${result.msg || (result.success ? 'Completado exitosamente' : 'Error al procesar')}</p>`;
 
         if (result.error) {
-            html += `<details style="margin-top: 8px;"><summary>Detalles del error</summary><pre style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; overflow-x: auto; font-size: 0.85rem;">${JSON.stringify(result.error, null, 2)}</pre></details>`;
+            html += `<details style="margin-top: 8px;"><summary style="cursor: pointer; color: #666;">Ver detalles del error</summary><pre style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; overflow-x: auto; font-size: 0.85rem;">${JSON.stringify(result.error, null, 2)}</pre></details>`;
         }
 
         if (result.data && result.success) {
             const blob = base64ToBlob(result.data, 'application/pdf');
             const url = URL.createObjectURL(blob);
-            html += `<a href="${url}" download="${result.service}.pdf" class="download-btn">Descargar PDF</a>`;
+            html += `<a href="${url}" download="${result.service}.pdf" class="download-btn">⬇ Descargar PDF</a>`;
         }
 
         html += `</div>`;
     });
 
-    resultDiv.innerHTML = html;
-    resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    modalBody.innerHTML = html;
+    openModal();
 }
 
 function showResult(type, message, base64Data = null, errorDetail = null) {
@@ -264,3 +268,36 @@ function base64ToBlob(base64, mimeType) {
     const byteArray = new Uint8Array(byteNumbers);
     return new Blob([byteArray], { type: mimeType });
 }
+
+// Modal functions
+function openModal() {
+    const modal = document.getElementById('resultsModal');
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    const modal = document.getElementById('resultsModal');
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+// Modal event listeners
+const modal = document.getElementById('resultsModal');
+const modalClose = document.querySelector('.modal-close');
+
+modalClose.addEventListener('click', closeModal);
+
+// Close modal when clicking outside
+modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+        closeModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('show')) {
+        closeModal();
+    }
+});
