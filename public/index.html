@@ -17,57 +17,157 @@
 
         <main>
             <form id="mainForm">
-                <div class="form-group">
-                    <label for="rut">RUT</label>
-                    <input type="text" id="rut" name="rut" placeholder="12.345.678-9" required>
+                <!-- Step 1: Credentials -->
+                <div class="wizard-step" id="step1" style="display: block;">
+                    <div class="step-header">
+                        <span class="step-number">Paso 1 de 4</span>
+                        <h3>Datos de Acceso</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rut">RUT</label>
+                        <input type="text" id="rut" name="rut" placeholder="12.345.678-9" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="claveunica">Clave Única</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="claveunica" name="claveunica" placeholder="*********" required>
+                            <button type="button" class="toggle-password" aria-label="Mostrar contraseña">
+                                <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="documento">Documento</label>
+                        <input type="text" id="documento" name="documento" placeholder="123.123.123" required>
+                    </div>
+
+                    <div class="form-group" id="requesterEmailGroup">
+                        <label for="requesterEmail">Email Solicitante</label>
+                        <input type="email" id="requesterEmail" name="requesterEmail" placeholder="correo@ejemplo.com"
+                            required>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="claveunica">Clave Única</label>
-                    <div class="password-input-wrapper">
-                        <input type="password" id="claveunica" name="claveunica" placeholder="*********" required>
-                        <button type="button" class="toggle-password" aria-label="Mostrar contraseña">
-                            <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
+                <!-- Step 2: Services -->
+                <div class="wizard-step" id="step2" style="display: none;">
+                    <div class="step-header">
+                        <span class="step-number">Paso 2 de 4</span>
+                        <h3>Seleccionar Servicios</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Servicios</label>
+                        <div id="servicesContainer" class="services-container">
+                            <p class="loading-text">Cargando servicios...</p>
+                        </div>
+                        <p id="servicesError" class="error-text" style="display: none;">Debe seleccionar al menos un
+                            servicio</p>
+                    </div>
+
+                    <div class="form-group additional-fields" id="carpetaFields" style="display: none;">
+                        <label for="username">Nombre</label>
+                        <input type="text" id="username" name="username" placeholder="Juan Pérez">
+
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="correo@ejemplo.com">
+                    </div>
+                </div>
+
+                <!-- Step 3: Delivery Method -->
+                <div class="wizard-step" id="step3" style="display: none;">
+                    <div class="step-header">
+                        <span class="step-number">Paso 3 de 4</span>
+                        <h3>¿Cómo desea recibir los documentos?</h3>
+                    </div>
+
+                    <div class="warning-message" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-bottom: 20px; border-radius: 6px;">
+                        <p style="margin: 0; color: #856404; font-size: 0.9rem;">
+                            ⚠️ <strong>Importante:</strong> La recopilación de documentos puede tomar varias horas. Recibirá una notificación cuando estén listos.
+                        </p>
+                    </div>
+
+                    <p style="margin-bottom: 20px; color: #555;">Seleccione uno o más métodos de entrega:</p>
+                    <div class="delivery-options">
+                        <label class="delivery-option" for="delivery-email">
+                            <input type="checkbox" id="delivery-email" value="email" class="delivery-checkbox-input">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                                </path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
                             </svg>
-                        </button>
+                            <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; flex: 1;">
+                                <span>Por email al correo</span>
+                                <span id="emailPreview" style="font-size: 0.85rem; font-weight: 400; color: #666;"></span>
+                            </div>
+                        </label>
+                        <label class="delivery-option" for="delivery-jogi">
+                            <input type="checkbox" id="delivery-jogi" value="jogi" class="delivery-checkbox-input">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            <span>En mis carpetas en Jogi</span>
+                        </label>
+                    </div>
+                    <p id="deliveryError" class="error-text" style="display: none; margin-top: 10px;">
+                        Por favor, seleccione al menos un método de entrega
+                    </p>
+                </div>
+
+                <!-- Step 4: Confirmation -->
+                <div class="wizard-step" id="step4" style="display: none;">
+                    <div class="step-header">
+                        <span class="step-number">Paso 4 de 4</span>
+                        <h3>Confirmación</h3>
+                    </div>
+
+                    <div class="confirmation-summary">
+                        <div class="summary-section">
+                            <h4>Datos de Acceso</h4>
+                            <p><strong>RUT:</strong> <span id="summary-rut"></span></p>
+                            <p><strong>Documento:</strong> <span id="summary-documento"></span></p>
+                            <p><strong>Email:</strong> <span id="summary-email"></span></p>
+                        </div>
+
+                        <div class="summary-section">
+                            <h4>Servicios Seleccionados</h4>
+                            <ul id="summary-services"></ul>
+                        </div>
+
+                        <div class="summary-section">
+                            <h4>Métodos de Entrega</h4>
+                            <ul id="summary-delivery"></ul>
+                        </div>
+
+                        <div class="warning-message" style="background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin-top: 20px; border-radius: 6px;">
+                            <p style="margin: 0; color: #155724; font-size: 0.9rem;">
+                                ✓ Sus documentos serán procesados y entregados según los métodos seleccionados. Recibirá una notificación cuando estén listos.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="documento">Documento</label>
-                    <input type="text" id="documento" name="documento" placeholder="123.123.123" required>
+                <!-- Navigation Buttons -->
+                <div class="wizard-navigation">
+                    <button type="button" id="prevBtn" class="wizard-btn wizard-btn-secondary" style="display: none;">
+                        ← Anterior
+                    </button>
+                    <button type="button" id="nextBtn" class="wizard-btn wizard-btn-primary">
+                        Siguiente →
+                    </button>
+                    <button type="submit" id="submitBtn" class="wizard-btn wizard-btn-primary" style="display: none;">
+                        <span class="btn-text">Confirmar y Procesar</span>
+                        <span class="btn-loader" style="display: none;">Procesando...</span>
+                    </button>
                 </div>
-
-                <div class="form-group" id="requesterEmailGroup">
-                    <label for="requesterEmail">Email Solicitante</label>
-                    <input type="email" id="requesterEmail" name="requesterEmail" placeholder="correo@ejemplo.com"
-                        required>
-                </div>
-
-                <div class="form-group">
-                    <label>Servicios</label>
-                    <div id="servicesContainer" class="services-container">
-                        <p class="loading-text">Cargando servicios...</p>
-                    </div>
-                    <p id="servicesError" class="error-text" style="display: none;">Debe seleccionar al menos un
-                        servicio</p>
-                </div>
-
-                <div class="form-group additional-fields" id="carpetaFields" style="display: none;">
-                    <label for="username">Nombre</label>
-                    <input type="text" id="username" name="username" placeholder="Juan Pérez">
-
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" placeholder="correo@ejemplo.com">
-                </div>
-
-                <button type="submit" id="submitBtn">
-                    <span class="btn-text">Consultar</span>
-                    <span class="btn-loader" style="display: none;">Procesando...</span>
-                </button>
             </form>
 
             <div id="result" class="result" style="display: none;"></div>
@@ -76,53 +176,6 @@
         <footer>
             <p>&copy; <span id="year"></span> Jogi</p>
         </footer>
-    </div>
-
-    <!-- Confirmation Modal -->
-    <div id="confirmationModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>¿Cómo desea recibir los documentos?</h2>
-                <button class="modal-close-confirm" aria-label="Cerrar">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="warning-message" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-bottom: 20px; border-radius: 6px;">
-                    <p style="margin: 0; color: #856404; font-size: 0.9rem;">
-                        ⚠️ <strong>Importante:</strong> La recopilación de documentos puede tomar varias horas. Recibirá una notificación cuando estén listos.
-                    </p>
-                </div>
-                <p style="margin-bottom: 20px; color: #555;">Seleccione uno o más métodos de entrega para sus documentos:</p>
-                <div class="delivery-options">
-                    <label class="delivery-option" for="delivery-email">
-                        <input type="checkbox" id="delivery-email" value="email" class="delivery-checkbox-input">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
-                            </path>
-                            <polyline points="22,6 12,13 2,6"></polyline>
-                        </svg>
-                        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; flex: 1;">
-                            <span>Por email al correo</span>
-                            <span id="emailPreview" style="font-size: 0.85rem; font-weight: 400; color: #666;"></span>
-                        </div>
-                    </label>
-                    <label class="delivery-option" for="delivery-jogi">
-                        <input type="checkbox" id="delivery-jogi" value="jogi" class="delivery-checkbox-input">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                        <span>En mis carpetas en Jogi</span>
-                    </label>
-                </div>
-                <p id="deliveryError" style="display: none; color: #dc3545; font-size: 0.875rem; margin-top: 10px;">
-                    Por favor, seleccione al menos un método de entrega
-                </p>
-                <button type="button" id="confirmDeliveryBtn" class="confirm-delivery-btn" style="width: 100%; margin-top: 20px; padding: 12px; background: linear-gradient(135deg, #020617 0%, #0e7490 55%, #020617 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
-                    Confirmar y Procesar
-                </button>
-            </div>
-        </div>
     </div>
 
     <!-- Results Modal -->

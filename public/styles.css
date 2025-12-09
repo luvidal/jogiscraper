@@ -540,6 +540,131 @@ footer {
     cursor: not-allowed;
 }
 
+/* Wizard Styles */
+.wizard-step {
+    animation: fadeIn 0.3s ease;
+}
+
+.step-header {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.step-number {
+    display: block;
+    font-size: 0.85rem;
+    color: #0e7490;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.step-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.wizard-navigation {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #e0e0e0;
+}
+
+.wizard-btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.wizard-btn-primary {
+    background: linear-gradient(135deg, #020617 0%, #0e7490 55%, #020617 100%);
+    color: white;
+}
+
+.wizard-btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(14, 116, 144, 0.4);
+}
+
+.wizard-btn-secondary {
+    background: #f8f9fa;
+    color: #333;
+    border: 2px solid #e0e0e0;
+}
+
+.wizard-btn-secondary:hover:not(:disabled) {
+    background: #e8f4f8;
+    border-color: #0e7490;
+    color: #0e7490;
+}
+
+.wizard-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Confirmation Summary Styles */
+.confirmation-summary {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.summary-section {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.summary-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.summary-section h4 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    color: #0e7490;
+    font-weight: 600;
+}
+
+.summary-section p {
+    margin: 8px 0;
+    color: #555;
+    line-height: 1.6;
+}
+
+.summary-section strong {
+    color: #333;
+    font-weight: 600;
+}
+
+.summary-section ul {
+    margin: 10px 0 0 0;
+    padding-left: 25px;
+}
+
+.summary-section li {
+    margin-bottom: 8px;
+    color: #555;
+    line-height: 1.6;
+}
+
+.warning-message {
+    animation: fadeIn 0.3s ease;
+}
+
 @media (max-width: 640px) {
     header h1 {
         font-size: 2rem;
@@ -563,6 +688,14 @@ footer {
     }
 
     .modal-header h2 {
+        font-size: 1.25rem;
+    }
+
+    .wizard-navigation {
+        flex-direction: column;
+    }
+
+    .step-header h3 {
         font-size: 1.25rem;
     }
 }

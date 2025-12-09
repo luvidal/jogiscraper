@@ -11,6 +11,8 @@ const requesterEmailGroup = document.getElementById('requesterEmailGroup');
 
 let documentsData = [];
 let selectedServices = new Set();
+let currentStep = 1;
+const totalSteps = 4;
 
 // Check URL parameters for requester email
 function checkUrlParams() {
@@ -132,6 +134,163 @@ function populateServiceSelect(documents) {
 // Load documents on page load
 loadDocuments();
 
+// Wizard navigation
+function showStep(step) {
+    // Hide all steps
+    for (let i = 1; i <= totalSteps; i++) {
+        const stepElement = document.getElementById(`step${i}`);
+        if (stepElement) {
+            stepElement.style.display = i === step ? 'block' : 'none';
+        }
+    }
+
+    currentStep = step;
+
+    // Update navigation buttons
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+
+    prevBtn.style.display = step === 1 ? 'none' : 'inline-block';
+    nextBtn.style.display = step === totalSteps ? 'none' : 'inline-block';
+    submitBtn.style.display = step === totalSteps ? 'inline-block' : 'none';
+
+    // Populate confirmation summary on step 4
+    if (step === 4) {
+        populateConfirmationSummary();
+    }
+
+    // Update email preview in step 3
+    if (step === 3) {
+        const emailPreviewInStep = document.querySelector('#step3 #emailPreview');
+        const requesterEmail = document.getElementById('requesterEmail').value;
+        if (emailPreviewInStep && requesterEmail) {
+            emailPreviewInStep.textContent = requesterEmail;
+        }
+    }
+}
+
+function validateStep(step) {
+    if (step === 1) {
+        // Validate credentials
+        const rut = document.getElementById('rut');
+        const claveunica = document.getElementById('claveunica');
+        const documento = document.getElementById('documento');
+        const requesterEmail = document.getElementById('requesterEmail');
+
+        const fields = [rut, claveunica, documento];
+        if (requesterEmail.required) {
+            fields.push(requesterEmail);
+        }
+
+        for (const field of fields) {
+            if (!field.value.trim()) {
+                field.reportValidity();
+                return false;
+            }
+        }
+
+        // Validate email format if required
+        if (requesterEmail.required && !requesterEmail.checkValidity()) {
+            requesterEmail.reportValidity();
+            return false;
+        }
+
+        return true;
+    } else if (step === 2) {
+        // Validate services selection
+        if (selectedServices.size === 0) {
+            servicesError.style.display = 'block';
+            servicesError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        // Validate carpeta fields if carpeta is selected
+        if (selectedServices.has('carpeta')) {
+            const username = document.getElementById('username');
+            const email = document.getElementById('email');
+
+            if (!username.value.trim() || !email.value.trim()) {
+                if (!username.value.trim()) username.reportValidity();
+                else if (!email.value.trim()) email.reportValidity();
+                return false;
+            }
+
+            if (!email.checkValidity()) {
+                email.reportValidity();
+                return false;
+            }
+        }
+
+        servicesError.style.display = 'none';
+        return true;
+    } else if (step === 3) {
+        // Validate delivery method selection
+        const selectedMethods = Array.from(document.querySelectorAll('#step3 .delivery-checkbox-input:checked'));
+        const deliveryError = document.getElementById('deliveryError');
+
+        if (selectedMethods.length === 0) {
+            deliveryError.style.display = 'block';
+            deliveryError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        deliveryError.style.display = 'none';
+        return true;
+    }
+
+    return true;
+}
+
+function populateConfirmationSummary() {
+    // Populate credentials
+    document.getElementById('summary-rut').textContent = document.getElementById('rut').value;
+    document.getElementById('summary-documento').textContent = document.getElementById('documento').value;
+    document.getElementById('summary-email').textContent = document.getElementById('requesterEmail').value;
+
+    // Populate services
+    const servicesList = document.getElementById('summary-services');
+    servicesList.innerHTML = '';
+    selectedServices.forEach(serviceScript => {
+        const serviceDoc = documentsData.find(d => d.script === serviceScript);
+        const serviceName = serviceDoc ? serviceDoc.label : serviceScript;
+        const li = document.createElement('li');
+        li.textContent = serviceName;
+        servicesList.appendChild(li);
+    });
+
+    // Populate delivery methods
+    const deliveryList = document.getElementById('summary-delivery');
+    deliveryList.innerHTML = '';
+    const selectedMethods = Array.from(document.querySelectorAll('#step3 .delivery-checkbox-input:checked'));
+    selectedMethods.forEach(checkbox => {
+        const li = document.createElement('li');
+        if (checkbox.value === 'email') {
+            li.textContent = `Por email al correo ${document.getElementById('requesterEmail').value}`;
+        } else if (checkbox.value === 'jogi') {
+            li.textContent = 'En mis carpetas en Jogi';
+        }
+        deliveryList.appendChild(li);
+    });
+}
+
+// Next button handler
+document.getElementById('nextBtn').addEventListener('click', () => {
+    if (validateStep(currentStep)) {
+        showStep(currentStep + 1);
+    }
+});
+
+// Previous button handler
+document.getElementById('prevBtn').addEventListener('click', () => {
+    if (currentStep > 1) {
+        showStep(currentStep - 1);
+    }
+});
+
+// Initialize wizard on first step
+showStep(1);
+
 // LocalStorage management for form inputs
 const STORAGE_KEY_PREFIX = 'jogiscraper_';
 
@@ -191,47 +350,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Store form data for submission after confirmation
-let pendingFormData = null;
-
+// Form submission handler (from step 4)
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    // Final validation before submission
     if (selectedServices.size === 0) {
         servicesError.style.display = 'block';
-        servicesError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        showStep(2);
         return;
     }
 
-    // Store form data and show confirmation modal
+    // Get delivery methods from step 3
+    const selectedMethods = Array.from(document.querySelectorAll('#step3 .delivery-checkbox-input:checked'))
+        .map(cb => cb.value);
+
+    if (selectedMethods.length === 0) {
+        showStep(3);
+        return;
+    }
+
+    // Prepare form data
     const formData = new FormData(form);
-    pendingFormData = {
+    const payload = {
         rut: formData.get('rut'),
         claveunica: formData.get('claveunica'),
         documento: formData.get('documento'),
         requesterEmail: formData.get('requesterEmail'),
-        services: Array.from(selectedServices)
+        services: Array.from(selectedServices),
+        deliveryMethod: selectedMethods
     };
 
     // Add carpeta fields if carpeta service is selected
     if (selectedServices.has('carpeta')) {
-        pendingFormData.username = formData.get('username');
-        pendingFormData.email = formData.get('email');
+        payload.username = formData.get('username');
+        payload.email = formData.get('email');
     }
 
-    // Show confirmation modal
-    openConfirmationModal();
+    // Submit request
+    await submitRequest(selectedMethods, payload);
 });
 
-async function submitRequest(deliveryMethod) {
-    if (!pendingFormData) return;
-
-    // Add delivery method to payload
-    const payload = {
-        ...pendingFormData,
-        deliveryMethod
-    };
-
+async function submitRequest(deliveryMethod, payload) {
     setLoading(true);
     resultDiv.innerHTML = '';
     resultDiv.style.display = 'none';
@@ -249,7 +409,11 @@ async function submitRequest(deliveryMethod) {
 
         if (data.success) {
             // Show success message for background job
-            showSuccessMessage(data.requestId, deliveryMethod, pendingFormData.requesterEmail);
+            showSuccessMessage(data.requestId, deliveryMethod, payload.requesterEmail);
+            // Reset form and go back to step 1
+            form.reset();
+            selectedServices.clear();
+            showStep(1);
         } else {
             showResult('error', data.error || 'Error procesando la solicitud');
         }
@@ -257,7 +421,6 @@ async function submitRequest(deliveryMethod) {
         showResult('error', 'Error de conexión', null, error.message);
     } finally {
         setLoading(false);
-        pendingFormData = null;
     }
 }
 
@@ -400,84 +563,38 @@ function closeModal() {
     document.body.style.overflow = '';
 }
 
-function openConfirmationModal() {
-    const modal = document.getElementById('confirmationModal');
-    const emailPreview = document.getElementById('emailPreview');
-
-    // Show the requester's email in the modal
-    if (pendingFormData && pendingFormData.requesterEmail) {
-        emailPreview.textContent = pendingFormData.requesterEmail;
-    }
-
-    modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeConfirmationModal() {
-    const modal = document.getElementById('confirmationModal');
-    modal.classList.remove('show');
-    document.body.style.overflow = '';
-    pendingFormData = null;
-}
-
 // Results modal event listeners
 const modal = document.getElementById('resultsModal');
 const modalClose = document.querySelector('.modal-close');
 
-modalClose.addEventListener('click', closeModal);
+if (modalClose) {
+    modalClose.addEventListener('click', closeModal);
+}
 
 // Close modal when clicking outside
-modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-        closeModal();
-    }
-});
-
-// Confirmation modal event listeners
-const confirmationModal = document.getElementById('confirmationModal');
-const modalCloseConfirm = document.querySelector('.modal-close-confirm');
-const confirmDeliveryBtn = document.getElementById('confirmDeliveryBtn');
-const deliveryError = document.getElementById('deliveryError');
-
-modalCloseConfirm.addEventListener('click', closeConfirmationModal);
-
-// Close modal when clicking outside
-confirmationModal.addEventListener('click', (e) => {
-    if (e.target === confirmationModal) {
-        closeConfirmationModal();
-    }
-});
-
-// Handle confirm button click
-confirmDeliveryBtn.addEventListener('click', async () => {
-    const selectedMethods = Array.from(document.querySelectorAll('.delivery-checkbox-input:checked'))
-        .map(cb => cb.value);
-
-    if (selectedMethods.length === 0) {
-        deliveryError.style.display = 'block';
-        return;
-    }
-
-    deliveryError.style.display = 'none';
-    closeConfirmationModal();
-    await submitRequest(selectedMethods);
-});
-
-// Hide error when user selects an option
-document.querySelectorAll('.delivery-checkbox-input').forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
-        deliveryError.style.display = 'none';
+if (modal) {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
     });
-});
+}
 
 // Close modal with Escape key
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        if (modal.classList.contains('show')) {
+        if (modal && modal.classList.contains('show')) {
             closeModal();
         }
-        if (confirmationModal.classList.contains('show')) {
-            closeConfirmationModal();
+    }
+});
+
+// Hide delivery error when user selects an option in step 3
+document.addEventListener('change', (e) => {
+    if (e.target.classList.contains('delivery-checkbox-input')) {
+        const deliveryError = document.getElementById('deliveryError');
+        if (deliveryError) {
+            deliveryError.style.display = 'none';
         }
     }
 });
