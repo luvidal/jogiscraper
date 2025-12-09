@@ -60,11 +60,33 @@ function formatRut(input) {
     }
 }
 
+// Documento formatting function (XXX.XXX.XXX)
+function formatDocumento(input) {
+    let value = input.value.replace(/[^0-9]/g, ''); // Remove everything except numbers
+
+    if (value.length === 0) {
+        input.value = '';
+        return;
+    }
+
+    // Format with dots every 3 digits
+    const formatted = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    input.value = formatted;
+}
+
 // RUT formatting - attach input listener
 const rutInput = document.getElementById('rut');
 if (rutInput) {
     rutInput.addEventListener('input', (e) => {
         formatRut(e.target);
+    });
+}
+
+// Documento formatting - attach input listener
+const documentoInput = document.getElementById('documento');
+if (documentoInput) {
+    documentoInput.addEventListener('input', (e) => {
+        formatDocumento(e.target);
     });
 }
 
@@ -376,6 +398,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Format RUT after loading from localStorage
                 if (fieldName === 'rut') {
                     formatRut(input);
+                }
+
+                // Format documento after loading from localStorage
+                if (fieldName === 'documento') {
+                    formatDocumento(input);
                 }
             }
 
