@@ -132,6 +132,25 @@ function populateServiceSelect(documents) {
 // Load documents on page load
 loadDocuments();
 
+// Set custom validation messages in Spanish
+document.addEventListener('DOMContentLoaded', () => {
+    const requiredInputs = document.querySelectorAll('input[required], select[required]');
+    requiredInputs.forEach(input => {
+        input.addEventListener('invalid', (e) => {
+            e.preventDefault();
+            if (input.validity.valueMissing) {
+                input.setCustomValidity('Por favor, complete este campo');
+            } else if (input.validity.typeMismatch && input.type === 'email') {
+                input.setCustomValidity('Por favor, ingrese un correo electrónico válido');
+            }
+        });
+
+        input.addEventListener('input', () => {
+            input.setCustomValidity('');
+        });
+    });
+});
+
 // Store form data for submission after confirmation
 let pendingFormData = null;
 
