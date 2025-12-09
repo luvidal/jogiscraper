@@ -1,65 +1,58 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JogiScraper - Herramienta de Consultas</title>
     <link rel="stylesheet" href="/styles.css">
 </head>
+
 <body>
     <div class="container">
         <header>
             <h1>JogiScraper</h1>
-            <p class="subtitle">Herramienta de Consultas SII y Registro Civil</p>
+            <p class="subtitle">Herramienta de automatización de descargas</p>
         </header>
 
         <main>
             <form id="mainForm">
                 <div class="form-group">
                     <label for="rut">RUT</label>
-                    <input
-                        type="text"
-                        id="rut"
-                        name="rut"
-                        placeholder="12.345.678-9"
-                        required
-                    >
+                    <input type="text" id="rut" name="rut" placeholder="12.345.678-9" required>
                 </div>
 
                 <div class="form-group">
                     <label for="claveunica">Clave Única</label>
-                    <input
-                        type="password"
-                        id="claveunica"
-                        name="claveunica"
-                        placeholder="••••••••"
-                        required
-                    >
+                    <input type="password" id="claveunica" name="claveunica" placeholder="••••••••" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="service">Servicio</label>
-                    <select id="service" name="service" required>
-                        <option value="">Cargando servicios...</option>
-                    </select>
+                    <label for="documento">Documento</label>
+                    <input type="text" id="documento" name="documento" placeholder="123.123.123" required>
+                </div>
+
+                <div class="form-group" id="requesterEmailGroup">
+                    <label for="requesterEmail">Email Solicitante</label>
+                    <input type="email" id="requesterEmail" name="requesterEmail" placeholder="correo@ejemplo.com"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label>Servicios</label>
+                    <div id="servicesContainer" class="services-container">
+                        <p class="loading-text">Cargando servicios...</p>
+                    </div>
+                    <p id="servicesError" class="error-text" style="display: none;">Debe seleccionar al menos un
+                        servicio</p>
                 </div>
 
                 <div class="form-group additional-fields" id="carpetaFields" style="display: none;">
                     <label for="username">Nombre</label>
-                    <input
-                        type="text"
-                        id="username"
-                        name="username"
-                        placeholder="Juan Pérez"
-                    >
+                    <input type="text" id="username" name="username" placeholder="Juan Pérez">
 
                     <label for="email">Email</label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        placeholder="correo@ejemplo.com"
-                    >
+                    <input type="email" id="email" name="email" placeholder="correo@ejemplo.com">
                 </div>
 
                 <button type="submit" id="submitBtn">
@@ -72,10 +65,14 @@
         </main>
 
         <footer>
-            <p>&copy; 2024 JogiScraper - Herramienta de Consultas</p>
+            <p>&copy; <span id="year"></span> Jogi</p>
         </footer>
     </div>
 
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
     <script src="/app.js"></script>
 </body>
+
 </html>
