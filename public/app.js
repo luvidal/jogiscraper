@@ -34,6 +34,43 @@ function checkUrlParams() {
 // Check URL params on page load
 checkUrlParams();
 
+// RUT validation function for Chilean IDs
+function validateRut(rut) {
+    // Remove formatting (dots and hyphen)
+    const cleanRut = rut.replace(/\./g, '').replace(/-/g, '');
+
+    if (cleanRut.length < 2) {
+        return false;
+    }
+
+    // Separate body and verifier
+    const body = cleanRut.slice(0, -1);
+    const verifier = cleanRut.slice(-1).toLowerCase();
+
+    // Calculate expected verifier using Chilean algorithm
+    let sum = 0;
+    let multiplier = 2;
+
+    // Calculate from right to left
+    for (let i = body.length - 1; i >= 0; i--) {
+        sum += parseInt(body[i]) * multiplier;
+        multiplier = multiplier === 7 ? 2 : multiplier + 1;
+    }
+
+    const expectedVerifier = 11 - (sum % 11);
+    let expectedVerifierStr;
+
+    if (expectedVerifier === 11) {
+        expectedVerifierStr = '0';
+    } else if (expectedVerifier === 10) {
+        expectedVerifierStr = 'k';
+    } else {
+        expectedVerifierStr = expectedVerifier.toString();
+    }
+
+    return verifier === expectedVerifierStr;
+}
+
 // RUT formatting function (defined globally so it can be used after localStorage load)
 function formatRut(input) {
     // Get cursor position before formatting
@@ -265,6 +302,14 @@ function validateStep(step) {
                 field.reportValidity();
                 return false;
             }
+        }
+
+        // Validate RUT using Chilean algorithm
+        if (!validateRut(rut.value)) {
+            rut.setCustomValidity('RUT inválido');
+            rut.reportValidity();
+            rut.setCustomValidity(''); // Reset for next validation
+            return false;
         }
 
         // Validate email format if required
