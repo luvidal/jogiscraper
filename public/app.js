@@ -32,6 +32,19 @@ function checkUrlParams() {
 // Check URL params on page load
 checkUrlParams();
 
+// Toggle password visibility
+const togglePasswordBtn = document.querySelector('.toggle-password');
+const claveUnicaInput = document.getElementById('claveunica');
+
+if (togglePasswordBtn && claveUnicaInput) {
+    togglePasswordBtn.addEventListener('click', () => {
+        const isPassword = claveUnicaInput.type === 'password';
+        claveUnicaInput.type = isPassword ? 'text' : 'password';
+        togglePasswordBtn.classList.toggle('visible', !isPassword);
+        togglePasswordBtn.setAttribute('aria-label', isPassword ? 'Ocultar contraseña' : 'Mostrar contraseña');
+    });
+}
+
 // Load documents from API on page load
 async function loadDocuments() {
     try {

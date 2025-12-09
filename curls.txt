@@ -1,0 +1,40 @@
+
+curl -X GET http://localhost:3000/test
+
+curl -X POST http://localhost:3000/declaracion \
+  -H 'Content-Type: application/json' \
+  -H 'X-Internal-Key: aayQ8rgssN77gmIS9v8aG4Utr2unoXDNYHShenYpY' \
+  -d '{"claveunica":"Zaqw!123","rut":"12881606-2","documento":"536.755.395","year":"2024"}'
+
+curl -X POST http://localhost:3000/carpeta \
+  -H 'Content-Type: application/json' \
+  -H 'X-Internal-Key: aayQ8rgssN77gmIS9v8aG4Utr2unoXDNYHShenYpY' \
+  -d '{"claveunica":"Bp5hvmcu.","rut":"10992439-3","documento":"513.193.061","year":"2024"}'
+
+curl -X POST http://localhost:3000/cotizaciones \
+  -H 'Content-Type: application/json' \
+  -H 'X-Internal-Key: aayQ8rgssN77gmIS9v8aG4Utr2unoXDNYHShenYpY' \
+  -d '{"claveunica":"Anenina2*","rut":"12696623-7","documento":"531.999.965","year":"2024"}'
+
+curl -X POST http://localhost:3000/cotizaciones \
+  -H 'Content-Type: application/json' \
+  -H 'X-Internal-Key: aayQ8rgssN77gmIS9v8aG4Utr2unoXDNYHShenYpY' \
+  -d '{"claveunica":"Jacinta22%","rut":"10033960-9","documento":"527.133.342","year":"2024"}'
+
+curl -X POST http://localhost:3000/nomatrimonio \
+  -H 'Content-Type: application/json' \
+  -H 'X-Internal-Key: aayQ8rgssN77gmIS9v8aG4Utr2unoXDNYHShenYpY' \
+  -d '{"claveunica":"JkLo!0192","rut":"23089720-4","documento":"531.994.539","year":"2024"}'
+
+
+
+curl -X POST https://api.khipu.com/v1/cl/services/registrocivil.cl/marriage-certificate \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer eyJraWQiOiJwcm9kLTM0NTY5NjU5LTM1YWEtNGM2ZS05YTM2LWQ1Y2M1YWY1MzkwNiIsInR5cCI6IkpXVCIsImFsZyI6IlJTMjU2In0.eyJ1c2VyX2lkZW50aWZpZXIiOiIxMjg4MTYwNjIiLCJhY2NvdW50X2xpbmsiOiJqc3ROVGc4UEU1TmZIRURSWXgxVS9hdGM2V3NtZi96QmIycGdpamZ1U1EwaHJYMHQwU0dGMldjVUhwTGJhTkgyUEhLUXdvc29VcjNaNEdTRHZNcC9CbUpkN1h1cGNub2pWVUozVWphb0Vhb3A0N1gvRzc1SUgvQlB4K3dvdXVTT0lBZDVmUldiY3VtTEYzSytMWTdNcTIxbTZsRHBOSElmcnBucW1jSzBMbEZjY0ZxOWpUK2JiV3JHbVhWVEg4VElRcjdHelJLWFM5cmFaRUM1T242UGNmWmVSTWNiTXBLTlBPVEQrQm4xZk10UEJHN0p4OWNHWEFrOStFT05oc0xZSk9PbjdBPT0iLCJyb2xlcyI6WyJVU0VSIl0sImN1c3RvbSI6IiIsImlzcyI6Imh0dHBzOi8vYXV0aC1zZXJ2ZXIua2hpcHUuY29tIiwiY2xpZW50X2lkIjoiNDk1NjA2IiwiaW5zdGl0dXRpb25faWQiOiJjbF9zZXJ2aWNlc19hZmMiLCJhdWQiOiI0OTU2MDYiLCJuYmYiOjE3NDQwNTE1MzEsInNjb3BlIjpbIm9wZW5pZCIsImFwaSJdLCJvcGVyYXRpb25faWQiOiIzNjMzY2RlNi01MGE3LTQ4N2EtYTQwOS0zNWJhNzU1M2NhNDQiLCJleHAiOjE3NzU1ODc1MzEsImlhdCI6MTc0NDA1MTUzMSwiY2xpZW50X25hbWUiOiJMdWlzIFZpZGFsIChkZXNhcnJvbGxhZG9yKSIsImp0aSI6ImI0YzUyZDRhLTc0OTEtNGY0Ni04MzMwLTk3NmEwZDVhZmViZiJ9.cvV-9grmhfPGFSvAzPqiV5EEky1KTmmI1SQti_QKQjww4pVUDE4jle5j5oWoPDzmS8a7zIp-tjsS_ccG3qEyJmLOAJdKNvSxJbnA8pK0paRL1YGlIkwsxQYhD-roMIQu1ONDtYpjlS4VSpmqOIQ92l4mZTC6wLdzlJs9Uo6UxMuDcOExXshtr_1PjbJ3IcpldmJyP0wJO48cPdYM1Pe7S29d_xphDNrRDI3dIlkJ3YrxOdpu6NGDyEsAj4SVz43d26HGRNnyg_pYDFtL3nKD5oLEhxNjwNRVdMJPZ8-XCKqbYcl1BGVnWOV_3Hh4womZk2YV_NdWYCnrvywNUWwaqw' \
+  -d '{
+    "RequestData": {
+      "RolUnicoNacionalCertificate": "128816062",
+      "RolUnicoNacionalApplicant": "128816062",
+      "DocumentNumberApplicant": "536755395"
+    }
+  }'
