@@ -336,14 +336,19 @@ footer {
 
 .modal-content {
     background: white;
-    border-radius: 16px;
+    border-radius: 12px;
     width: 90%;
     max-width: 600px;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     animation: slideUp 0.3s ease;
+}
+
+/* Make confirmation modal same style as main form */
+#confirmationModal .modal-content {
+    max-width: 600px;
 }
 
 @keyframes slideUp {
@@ -397,6 +402,11 @@ footer {
     padding: 30px;
     overflow-y: auto;
     flex: 1;
+}
+
+/* Match main form padding for confirmation modal */
+#confirmationModal .modal-body {
+    padding: 30px;
 }
 
 .modal-body .result-item {

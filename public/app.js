@@ -132,6 +132,28 @@ function populateServiceSelect(documents) {
 // Load documents on page load
 loadDocuments();
 
+// LocalStorage management for form inputs
+const STORAGE_KEY_PREFIX = 'jogiscraper_';
+
+function saveToLocalStorage(fieldName, value) {
+    // Don't save claveunica
+    if (fieldName === 'claveunica') return;
+    try {
+        localStorage.setItem(STORAGE_KEY_PREFIX + fieldName, value);
+    } catch (e) {
+        console.error('Failed to save to localStorage:', e);
+    }
+}
+
+function loadFromLocalStorage(fieldName) {
+    try {
+        return localStorage.getItem(STORAGE_KEY_PREFIX + fieldName);
+    } catch (e) {
+        console.error('Failed to load from localStorage:', e);
+        return null;
+    }
+}
+
 // Set custom validation messages in Spanish
 document.addEventListener('DOMContentLoaded', () => {
     const requiredInputs = document.querySelectorAll('input[required], select[required]');
@@ -147,6 +169,25 @@ document.addEventListener('DOMContentLoaded', () => {
         input.addEventListener('input', () => {
             input.setCustomValidity('');
         });
+    });
+
+    // Load saved values from localStorage
+    const formInputs = ['rut', 'documento', 'requesterEmail', 'username', 'email'];
+    formInputs.forEach(fieldName => {
+        const input = document.getElementById(fieldName) || document.querySelector(`[name="${fieldName}"]`);
+        if (input) {
+            const savedValue = loadFromLocalStorage(fieldName);
+            if (savedValue) {
+                input.value = savedValue;
+            }
+
+            // Save on blur (except claveunica)
+            if (fieldName !== 'claveunica') {
+                input.addEventListener('blur', () => {
+                    saveToLocalStorage(fieldName, input.value);
+                });
+            }
+        }
     });
 });
 
