@@ -36,27 +36,48 @@ checkUrlParams();
 
 // RUT formatting function (defined globally so it can be used after localStorage load)
 function formatRut(input) {
-    let value = input.value.replace(/[^0-9kK]/g, ''); // Remove everything except numbers and K
+    // Get cursor position before formatting
+    const cursorPosition = input.selectionStart;
+    const oldValue = input.value;
+
+    // Remove everything except numbers and K
+    let value = input.value.replace(/[^0-9kK]/g, '');
 
     if (value.length === 0) {
         input.value = '';
         return;
     }
 
-    // Separate body and verification digit
-    let body = value.slice(0, -1);
-    let verifier = value.slice(-1).toUpperCase();
-
-    // Format body with dots
-    if (body.length > 0) {
-        body = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    // Only allow K at the end
+    const kIndex = value.toLowerCase().indexOf('k');
+    if (kIndex !== -1 && kIndex !== value.length - 1) {
+        // Remove K if it's not at the end
+        value = value.replace(/[kK]/g, '');
     }
 
-    // Combine with hyphen if we have a verifier
-    if (value.length > 1) {
-        input.value = `${body}-${verifier}`;
+    let formatted;
+    if (value.length === 1) {
+        // Just one character, no formatting needed
+        formatted = value;
     } else {
-        input.value = body;
+        // Separate body and verification digit
+        let body = value.slice(0, -1);
+        let verifier = value.slice(-1).toUpperCase();
+
+        // Format body with dots
+        if (body.length > 0) {
+            body = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        // Combine with hyphen
+        formatted = `${body}-${verifier}`;
+    }
+
+    input.value = formatted;
+
+    // Try to maintain cursor position
+    if (formatted.length >= cursorPosition) {
+        input.setSelectionRange(cursorPosition, cursorPosition);
     }
 }
 
