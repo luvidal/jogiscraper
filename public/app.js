@@ -37,11 +37,11 @@ checkUrlParams();
 // RUT formatting
 const rutInput = document.getElementById('rut');
 if (rutInput) {
-    rutInput.addEventListener('input', (e) => {
-        let value = e.target.value.replace(/[^0-9kK]/g, ''); // Remove everything except numbers and K
+    const formatRut = (input) => {
+        let value = input.value.replace(/[^0-9kK]/g, ''); // Remove everything except numbers and K
 
         if (value.length === 0) {
-            e.target.value = '';
+            input.value = '';
             return;
         }
 
@@ -56,11 +56,20 @@ if (rutInput) {
 
         // Combine with hyphen if we have a verifier
         if (value.length > 1) {
-            e.target.value = `${body}-${verifier}`;
+            input.value = `${body}-${verifier}`;
         } else {
-            e.target.value = body;
+            input.value = body;
         }
+    };
+
+    rutInput.addEventListener('input', (e) => {
+        formatRut(e.target);
     });
+
+    // Format on page load if there's an existing value
+    if (rutInput.value) {
+        formatRut(rutInput);
+    }
 }
 
 // Toggle password visibility
