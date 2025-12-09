@@ -207,7 +207,8 @@ async function submitRequest(deliveryMethod) {
         const data = await response.json();
 
         if (data.success) {
-            showMultipleResults(data.results, data.requestId);
+            // Show success message for background job
+            showSuccessMessage(data.requestId, deliveryMethod, pendingFormData.requesterEmail);
         } else {
             showResult('error', data.error || 'Error procesando la solicitud');
         }
@@ -217,6 +218,46 @@ async function submitRequest(deliveryMethod) {
         setLoading(false);
         pendingFormData = null;
     }
+}
+
+function showSuccessMessage(requestId, deliveryMethods, email) {
+    const modal = document.getElementById('resultsModal');
+    const modalBody = document.getElementById('modalBody');
+
+    // Handle array of delivery methods
+    const methods = Array.isArray(deliveryMethods) ? deliveryMethods : [deliveryMethods];
+
+    const deliveryTexts = methods.map(method => {
+        if (method === 'email') {
+            return `📧 Por correo electrónico a <strong>${email}</strong>`;
+        } else if (method === 'jogi') {
+            return `📁 En sus carpetas de Jogi`;
+        }
+        return method;
+    });
+
+    const deliveryList = deliveryTexts.map(text => `<li style="margin-bottom: 8px;">${text}</li>`).join('');
+
+    const html = `
+        <div class="modal-summary" style="background: #d4edda; border-left-color: #28a745;">
+            <h3 style="color: #155724;">✓ Solicitud Recibida</h3>
+            <p style="color: #155724; margin-top: 10px;">
+                Su solicitud #${requestId} ha sido registrada exitosamente y está siendo procesada en segundo plano.
+            </p>
+        </div>
+        <div style="padding: 20px; background: #f8f9fa; border-radius: 8px; margin-top: 15px;">
+            <h4 style="margin: 0 0 10px 0; color: #0e7490;">Métodos de entrega seleccionados:</h4>
+            <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #555;">
+                ${deliveryList}
+            </ul>
+            <p style="margin-top: 15px; color: #666; font-size: 0.9rem;">
+                ⏱️ <strong>Tiempo estimado:</strong> La recopilación puede tomar varias horas dependiendo de los servicios solicitados.
+            </p>
+        </div>
+    `;
+
+    modalBody.innerHTML = html;
+    openModal();
 }
 
 function setLoading(isLoading) {
@@ -320,6 +361,13 @@ function closeModal() {
 
 function openConfirmationModal() {
     const modal = document.getElementById('confirmationModal');
+    const emailPreview = document.getElementById('emailPreview');
+
+    // Show the requester's email in the modal
+    if (pendingFormData && pendingFormData.requesterEmail) {
+        emailPreview.textContent = pendingFormData.requesterEmail;
+    }
+
     modal.classList.add('show');
     document.body.style.overflow = 'hidden';
 }
@@ -347,7 +395,8 @@ modal.addEventListener('click', (e) => {
 // Confirmation modal event listeners
 const confirmationModal = document.getElementById('confirmationModal');
 const modalCloseConfirm = document.querySelector('.modal-close-confirm');
-const deliveryOptions = document.querySelectorAll('.delivery-option');
+const confirmDeliveryBtn = document.getElementById('confirmDeliveryBtn');
+const deliveryError = document.getElementById('deliveryError');
 
 modalCloseConfirm.addEventListener('click', closeConfirmationModal);
 
@@ -358,12 +407,25 @@ confirmationModal.addEventListener('click', (e) => {
     }
 });
 
-// Handle delivery option selection
-deliveryOptions.forEach(option => {
-    option.addEventListener('click', async () => {
-        const method = option.dataset.method;
-        closeConfirmationModal();
-        await submitRequest(method);
+// Handle confirm button click
+confirmDeliveryBtn.addEventListener('click', async () => {
+    const selectedMethods = Array.from(document.querySelectorAll('.delivery-checkbox-input:checked'))
+        .map(cb => cb.value);
+
+    if (selectedMethods.length === 0) {
+        deliveryError.style.display = 'block';
+        return;
+    }
+
+    deliveryError.style.display = 'none';
+    closeConfirmationModal();
+    await submitRequest(selectedMethods);
+});
+
+// Hide error when user selects an option
+document.querySelectorAll('.delivery-checkbox-input').forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+        deliveryError.style.display = 'none';
     });
 });
 

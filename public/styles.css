@@ -491,6 +491,7 @@ footer {
     font-size: 1rem;
     font-weight: 600;
     color: #333;
+    position: relative;
 }
 
 .delivery-option:hover {
@@ -500,9 +501,33 @@ footer {
     box-shadow: 0 4px 12px rgba(14, 116, 144, 0.2);
 }
 
+.delivery-option:has(input:checked) {
+    background: #e8f4f8;
+    border-color: #0e7490;
+    box-shadow: 0 2px 8px rgba(14, 116, 144, 0.15);
+}
+
 .delivery-option svg {
     color: #0e7490;
     flex-shrink: 0;
+}
+
+.delivery-checkbox-input {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #0e7490;
+    flex-shrink: 0;
+}
+
+.confirm-delivery-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(14, 116, 144, 0.4);
+}
+
+.confirm-delivery-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 @media (max-width: 640px) {

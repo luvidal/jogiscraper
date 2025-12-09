@@ -25,7 +25,7 @@
                 <div class="form-group">
                     <label for="claveunica">Clave Única</label>
                     <div class="password-input-wrapper">
-                        <input type="password" id="claveunica" name="claveunica" placeholder="***" required>
+                        <input type="password" id="claveunica" name="claveunica" placeholder="*********" required>
                         <button type="button" class="toggle-password" aria-label="Mostrar contraseña">
                             <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2">
@@ -86,24 +86,41 @@
                 <button class="modal-close-confirm" aria-label="Cerrar">&times;</button>
             </div>
             <div class="modal-body">
-                <p style="margin-bottom: 20px; color: #555;">Seleccione el método de entrega para sus documentos:</p>
+                <div class="warning-message" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-bottom: 20px; border-radius: 6px;">
+                    <p style="margin: 0; color: #856404; font-size: 0.9rem;">
+                        ⚠️ <strong>Importante:</strong> La recopilación de documentos puede tomar varias horas. Recibirá una notificación cuando estén listos.
+                    </p>
+                </div>
+                <p style="margin-bottom: 20px; color: #555;">Seleccione uno o más métodos de entrega para sus documentos:</p>
                 <div class="delivery-options">
-                    <button type="button" class="delivery-option" data-method="email">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <label class="delivery-option" for="delivery-email">
+                        <input type="checkbox" id="delivery-email" value="email" class="delivery-checkbox-input">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                            </path>
                             <polyline points="22,6 12,13 2,6"></polyline>
                         </svg>
-                        <span>Por Email</span>
-                    </button>
-                    <button type="button" class="delivery-option" data-method="download">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; flex: 1;">
+                            <span>Por email al correo</span>
+                            <span id="emailPreview" style="font-size: 0.85rem; font-weight: 400; color: #666;"></span>
+                        </div>
+                    </label>
+                    <label class="delivery-option" for="delivery-jogi">
+                        <input type="checkbox" id="delivery-jogi" value="jogi" class="delivery-checkbox-input">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                         </svg>
-                        <span>Descargar Ahora</span>
-                    </button>
+                        <span>En mis carpetas en Jogi</span>
+                    </label>
                 </div>
+                <p id="deliveryError" style="display: none; color: #dc3545; font-size: 0.875rem; margin-top: 10px;">
+                    Por favor, seleccione al menos un método de entrega
+                </p>
+                <button type="button" id="confirmDeliveryBtn" class="confirm-delivery-btn" style="width: 100%; margin-top: 20px; padding: 12px; background: linear-gradient(135deg, #020617 0%, #0e7490 55%, #020617 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                    Confirmar y Procesar
+                </button>
             </div>
         </div>
     </div>

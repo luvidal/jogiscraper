@@ -6,7 +6,7 @@ import { spawn } from 'child_process'
 import livereload from 'livereload'
 import connectLivereload from 'connect-livereload'
 import * as scripts from './index.js'
-import { getAllDocuments, getDocumentByFriendlyId, getDocumentsByOrigin, createRequest, updateRequestResults, getRequestById, createLog } from './db.js'
+import { getAllDocuments, getDocumentByFriendlyId, getDocumentsByOrigin, createRequest, updateRequestResults, getRequestById, createLog, getPendingRequestsByRut, updateRequestStatus } from './db.js'
 import { sendRequestNotification } from './email.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -122,19 +122,58 @@ apiRouter.get('/documents/origin/:origin', (req, res) => {
 // Submit multiple services request
 apiRouter.post('/submit-request', async (req, res) => {
   try {
-    const { rut, claveunica, documento, requesterEmail, services } = req.body
+    const { rut, claveunica, documento, requesterEmail, services, deliveryMethod = 'email' } = req.body
 
     if (!rut || !claveunica || !documento || !requesterEmail || !services || services.length === 0) {
       return res.status(400).json({ success: false, error: 'Missing required fields' })
     }
 
-    // Create request record (using new column names: email and documents)
-    const requestId = createRequest(rut, requesterEmail, services, claveunica, documento)
+    // Check for duplicate pending/processing requests with overlapping services
+    const pendingRequests = getPendingRequestsByRut(rut)
+    if (pendingRequests.length > 0) {
+      for (const pending of pendingRequests) {
+        const pendingServices = JSON.parse(pending.documents)
+        const duplicates = services.filter(s => pendingServices.includes(s))
+        if (duplicates.length > 0) {
+          return res.status(409).json({
+            success: false,
+            error: `Ya existe una solicitud en proceso para los servicios: ${duplicates.join(', ')}. Por favor espere a que finalice.`
+          })
+        }
+      }
+    }
 
-    // Process each service
+    // Create request record with delivery method
+    const requestId = createRequest(rut, requesterEmail, services, claveunica, documento, deliveryMethod)
+
+    // Return immediately - processing will happen in background
+    res.json({
+      success: true,
+      requestId
+    })
+
+    // Process in background (non-blocking)
+    processRequestInBackground(requestId, req.body)
+      .catch(err => console.error(`Background processing failed for request ${requestId}:`, err))
+  } catch (error) {
+    console.error('Error submitting request:', error)
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
+// Background processing function
+async function processRequestInBackground(requestId, data) {
+  try {
+    // Update status to processing
+    updateRequestStatus(requestId, 'processing')
+
+    const { rut, requesterEmail, services, deliveryMethod } = data
     const results = []
-    const basePayload = { ...req.body }
+    const basePayload = { ...data }
     delete basePayload.services
+    delete basePayload.deliveryMethod
+
+    console.log(`[Request ${requestId}] Starting background processing for ${services.length} services`)
 
     for (const service of services) {
       try {
@@ -171,6 +210,8 @@ apiRouter.post('/submit-request', async (req, res) => {
           data: capturedResult?.data,
           error: capturedResult?.error
         })
+
+        console.log(`[Request ${requestId}] Completed service: ${service} (${capturedResult?.success ? 'success' : 'failed'})`)
       } catch (error) {
         results.push({
           service,
@@ -178,6 +219,7 @@ apiRouter.post('/submit-request', async (req, res) => {
           msg: 'Error procesando servicio',
           error: error.message
         })
+        console.error(`[Request ${requestId}] Error processing service ${service}:`, error)
       }
     }
 
@@ -186,30 +228,22 @@ apiRouter.post('/submit-request', async (req, res) => {
     const status = successCount === results.length ? 'completed' : 'partial'
     updateRequestResults(requestId, results, status)
 
+    console.log(`[Request ${requestId}] Completed: ${successCount}/${results.length} successful`)
+
     // Send email notification (non-blocking)
     sendRequestNotification({
       requestId,
       rut,
       email: requesterEmail,
       documents: services,
-      results
-    }).catch(err => console.error('Failed to send email notification:', err))
-
-    res.json({
-      success: true,
-      requestId,
       results,
-      summary: {
-        total: results.length,
-        success: successCount,
-        failed: results.length - successCount
-      }
-    })
+      deliveryMethod
+    }).catch(err => console.error(`[Request ${requestId}] Failed to send email notification:`, err))
   } catch (error) {
-    console.error('Error processing request:', error)
-    res.status(500).json({ success: false, error: error.message })
+    console.error(`[Request ${requestId}] Background processing error:`, error)
+    updateRequestStatus(requestId, 'failed')
   }
-})
+}
 
 // Get request by ID
 apiRouter.get('/requests/:id', (req, res) => {

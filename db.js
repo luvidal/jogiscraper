@@ -35,7 +35,8 @@ function initDatabase() {
       created DATETIME DEFAULT CURRENT_TIMESTAMP,
       completed DATETIME,
       claveunica TEXT(100),
-      documento TEXT(100)
+      documento TEXT(100),
+      delivery_method TEXT DEFAULT 'email'
     )
   `
 
@@ -114,13 +115,33 @@ export function getDocumentsByOrigin(origin) {
 }
 
 // Requests table functions
-export function createRequest(rut, email, documents, claveunica = null, documento = null) {
+export function createRequest(rut, email, documents, claveunica = null, documento = null, deliveryMethod = 'email') {
+  // Ensure deliveryMethod is stored as JSON array
+  const deliveryMethodArray = Array.isArray(deliveryMethod) ? deliveryMethod : [deliveryMethod]
+
   const stmt = db.prepare(`
-    INSERT INTO requests (rut, email, documents, status, claveunica, documento)
-    VALUES (?, ?, ?, 'pending', ?, ?)
+    INSERT INTO requests (rut, email, documents, status, claveunica, documento, delivery_method)
+    VALUES (?, ?, ?, 'pending', ?, ?, ?)
   `)
-  const info = stmt.run(rut, email, JSON.stringify(documents), claveunica, documento)
+  const info = stmt.run(rut, email, JSON.stringify(documents), claveunica, documento, JSON.stringify(deliveryMethodArray))
   return info.lastInsertRowid
+}
+
+export function getPendingRequestsByRut(rut) {
+  return db.prepare(`
+    SELECT * FROM requests
+    WHERE rut = ? AND status IN ('pending', 'processing')
+    ORDER BY created DESC
+  `).all(rut)
+}
+
+export function updateRequestStatus(requestId, status) {
+  const stmt = db.prepare(`
+    UPDATE requests
+    SET status = ?
+    WHERE id = ?
+  `)
+  stmt.run(status, requestId)
 }
 
 export function updateRequestResults(requestId, results, status = 'completed') {
