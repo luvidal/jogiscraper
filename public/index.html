@@ -19,12 +19,13 @@
             <form id="mainForm">
                 <!-- Step 1: Credentials -->
                 <div class="wizard-step" id="step1" style="display: block;">
-                    <div class="step-header">
-                        <span class="step-number">Paso 1 de 4</span>
-                        <h3>Datos de Acceso</h3>
-                    </div>
+                    <div class="wizard-step-content">
+                        <div class="step-header">
+                            <span class="step-number">Paso 1 de 4</span>
+                            <h3>Datos de Acceso</h3>
+                        </div>
 
-                    <div class="form-group">
+                        <div class="form-group">
                         <label for="rut">RUT</label>
                         <input type="text" id="rut" name="rut" placeholder="12.345.678-9" required>
                     </div>
@@ -48,21 +49,23 @@
                         <input type="text" id="documento" name="documento" placeholder="123.123.123" required>
                     </div>
 
-                    <div class="form-group" id="requesterEmailGroup">
-                        <label for="requesterEmail">Email Solicitante</label>
-                        <input type="email" id="requesterEmail" name="requesterEmail" placeholder="correo@ejemplo.com"
-                            required>
+                        <div class="form-group" id="requesterEmailGroup">
+                            <label for="requesterEmail">Email Solicitante</label>
+                            <input type="email" id="requesterEmail" name="requesterEmail" placeholder="correo@ejemplo.com"
+                                required>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Step 2: Services -->
                 <div class="wizard-step" id="step2" style="display: none;">
-                    <div class="step-header">
-                        <span class="step-number">Paso 2 de 4</span>
-                        <h3>Seleccionar Servicios</h3>
-                    </div>
+                    <div class="wizard-step-content">
+                        <div class="step-header">
+                            <span class="step-number">Paso 2 de 4</span>
+                            <h3>Seleccionar Servicios</h3>
+                        </div>
 
-                    <div class="form-group">
+                        <div class="form-group">
                         <label>Servicios</label>
                         <div id="servicesContainer" class="services-container">
                             <p class="loading-text">Cargando servicios...</p>
@@ -71,23 +74,25 @@
                             servicio</p>
                     </div>
 
-                    <div class="form-group additional-fields" id="carpetaFields" style="display: none;">
-                        <label for="username">Nombre</label>
-                        <input type="text" id="username" name="username" placeholder="Juan Pérez">
+                        <div class="form-group additional-fields" id="carpetaFields" style="display: none;">
+                            <label for="username">Nombre</label>
+                            <input type="text" id="username" name="username" placeholder="Juan Pérez">
 
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" placeholder="correo@ejemplo.com">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="correo@ejemplo.com">
+                        </div>
                     </div>
                 </div>
 
                 <!-- Step 3: Delivery Method -->
                 <div class="wizard-step" id="step3" style="display: none;">
-                    <div class="step-header">
-                        <span class="step-number">Paso 3 de 4</span>
-                        <h3>¿Cómo desea recibir los documentos?</h3>
-                    </div>
+                    <div class="wizard-step-content">
+                        <div class="step-header">
+                            <span class="step-number">Paso 3 de 4</span>
+                            <h3>¿Cómo desea recibir los documentos?</h3>
+                        </div>
 
-                    <div class="warning-message" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-bottom: 20px; border-radius: 6px;">
+                        <div class="warning-message" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-bottom: 20px; border-radius: 6px;">
                         <p style="margin: 0; color: #856404; font-size: 0.9rem;">
                             ⚠️ <strong>Importante:</strong> La recopilación de documentos puede tomar varias horas. Recibirá una notificación cuando estén listos.
                         </p>
@@ -117,19 +122,21 @@
                             <span>En mis carpetas en Jogi</span>
                         </label>
                     </div>
-                    <p id="deliveryError" class="error-text" style="display: none; margin-top: 10px;">
-                        Por favor, seleccione al menos un método de entrega
-                    </p>
+                        <p id="deliveryError" class="error-text" style="display: none; margin-top: 10px;">
+                            Por favor, seleccione al menos un método de entrega
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Step 4: Confirmation -->
                 <div class="wizard-step" id="step4" style="display: none;">
-                    <div class="step-header">
-                        <span class="step-number">Paso 4 de 4</span>
-                        <h3>Confirmación</h3>
-                    </div>
+                    <div class="wizard-step-content">
+                        <div class="step-header">
+                            <span class="step-number">Paso 4 de 4</span>
+                            <h3>Confirmación</h3>
+                        </div>
 
-                    <div class="confirmation-summary">
+                        <div class="confirmation-summary">
                         <div class="summary-section">
                             <h4>Datos de Acceso</h4>
                             <p><strong>RUT:</strong> <span id="summary-rut"></span></p>
@@ -147,10 +154,11 @@
                             <ul id="summary-delivery"></ul>
                         </div>
 
-                        <div class="warning-message" style="background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin-top: 20px; border-radius: 6px;">
-                            <p style="margin: 0; color: #155724; font-size: 0.9rem;">
-                                ✓ Sus documentos serán procesados y entregados según los métodos seleccionados. Recibirá una notificación cuando estén listos.
-                            </p>
+                            <div class="warning-message" style="background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin-top: 20px; border-radius: 6px;">
+                                <p style="margin: 0; color: #155724; font-size: 0.9rem;">
+                                    ✓ Sus documentos serán procesados y entregados según los métodos seleccionados. Recibirá una notificación cuando estén listos.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>

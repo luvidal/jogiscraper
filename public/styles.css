@@ -39,6 +39,9 @@ main {
     border-radius: 12px;
     padding: 30px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
 }
 
 .form-group {
@@ -132,12 +135,13 @@ main {
 }
 
 .services-container {
-    max-height: 400px;
+    max-height: 350px;
     overflow-y: auto;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
     padding: 15px;
     background: #fafafa;
+    flex-shrink: 0;
 }
 
 .service-group {
@@ -541,8 +545,22 @@ footer {
 }
 
 /* Wizard Styles */
+#mainForm {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
 .wizard-step {
-    animation: fadeIn 0.3s ease;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.wizard-step[style*="display: block"] {
+    opacity: 1;
 }
 
 .step-header {
@@ -567,10 +585,17 @@ footer {
     color: #333;
 }
 
+.wizard-step-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
 .wizard-navigation {
     display: flex;
     gap: 15px;
-    margin-top: 30px;
+    margin-top: auto;
     padding-top: 20px;
     border-top: 2px solid #e0e0e0;
 }
@@ -618,6 +643,8 @@ footer {
     background: #f8f9fa;
     border-radius: 8px;
     padding: 20px;
+    overflow-y: auto;
+    flex: 1;
 }
 
 .summary-section {
@@ -672,6 +699,7 @@ footer {
 
     main {
         padding: 20px;
+        min-height: 500px;
     }
 
     .modal-content {
@@ -697,5 +725,9 @@ footer {
 
     .step-header h3 {
         font-size: 1.25rem;
+    }
+
+    .services-container {
+        max-height: 250px;
     }
 }
