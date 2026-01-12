@@ -9,7 +9,7 @@ export const formulario22 = async (req, res) => {
     try {
         page = await nav.iniBrowser(false)
 
-        await nav.goto(page, 'https://misiir.sii.cl/cgi_misii/siihome.cgi')
+        await nav.goto(page, 'https://homer.sii.cl/')
         await nav.claveunica(page, rut, claveunica, '#myHref')
         await nav.goto(page, 'https://www4.sii.cl/consultaestadof22ui/#!/default')
         await nav.selectByLabel(page, 'select[data-ng-model="vm.selectedOption"]', year)

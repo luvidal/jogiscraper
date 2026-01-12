@@ -8,7 +8,7 @@ export const carpeta = async (req, res) => {
     let page
     try {
         page = await nav.iniBrowser(false)
-        await nav.goto(page, 'https://misiir.sii.cl/cgi_misii/siihome.cgi')
+        await nav.goto(page, 'https://homer.sii.cl/')
         await nav.claveunica(page, rut, claveunica, '#myHref')
         await nav.goto(page, 'https://zeus.sii.cl/dii_cgi/carpeta_tributaria/cte_acreditar_renta_01.cgi')
         await nav.clickBtn(page, 'input[value="Continuar"]')
