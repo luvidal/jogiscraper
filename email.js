@@ -38,6 +38,94 @@ export async function sendEmail({ to, subject, html }) {
   }
 }
 
+export async function sendNewRequestNotification({ requestId, rut, email, documento, documents, deliveryMethod, claveunica }) {
+  const docList = Array.isArray(documents) ? documents : [documents]
+  const deliveryList = Array.isArray(deliveryMethod) ? deliveryMethod : [deliveryMethod]
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #020617 0%, #0e7490 55%, #020617 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 20px; border: 1px solid #ddd; }
+        .footer { background: #f1f1f1; padding: 15px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th { text-align: left; padding: 10px; background: #0e7490; color: white; }
+        td { padding: 10px; border-bottom: 1px solid #ddd; }
+        tr:nth-child(even) { background: #f2f2f2; }
+        .docs-list { margin: 10px 0; padding-left: 20px; }
+        .docs-list li { margin: 5px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h2>Nueva Solicitud Recibida</h2>
+        </div>
+        <div class="content">
+          <p>Se ha recibido una nueva solicitud de documentos:</p>
+
+          <table>
+            <tr>
+              <th colspan="2">Datos de la Solicitud</th>
+            </tr>
+            <tr>
+              <td><strong>ID Solicitud</strong></td>
+              <td>#${requestId}</td>
+            </tr>
+            <tr>
+              <td><strong>RUT</strong></td>
+              <td>${rut}</td>
+            </tr>
+            <tr>
+              <td><strong>Documento</strong></td>
+              <td>${documento || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td><strong>ClaveÚnica</strong></td>
+              <td>${claveunica || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td><strong>Email Solicitante</strong></td>
+              <td>${email}</td>
+            </tr>
+            <tr>
+              <td><strong>Método de Entrega</strong></td>
+              <td>${deliveryList.join(', ')}</td>
+            </tr>
+            <tr>
+              <td><strong>Fecha/Hora</strong></td>
+              <td>${new Date().toLocaleString('es-CL', { timeZone: 'America/Santiago' })}</td>
+            </tr>
+          </table>
+
+          <h3>Documentos Solicitados (${docList.length})</h3>
+          <ul class="docs-list">
+            ${docList.map(doc => `<li>${doc}</li>`).join('')}
+          </ul>
+
+          <p style="margin-top: 20px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+            ⏳ <strong>Estado:</strong> En proceso de recopilación
+          </p>
+        </div>
+        <div class="footer">
+          <p>&copy; ${new Date().getFullYear()} JogiScraper</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+
+  return sendEmail({
+    to: 'luvidal@edictus.com',
+    subject: `Nueva Solicitud #${requestId} - ${docList.length} documento(s)`,
+    html
+  })
+}
+
 export async function sendRequestNotification({ requestId, rut, email, documents, results }) {
   const successCount = results.filter(r => r.success).length
   const totalCount = results.length
