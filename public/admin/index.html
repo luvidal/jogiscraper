@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - JogiScraper</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .delivery-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .delivery-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .delivery-header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .delivery-header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+        }
+
+        .requests-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .requests-table th {
+            background: #0e7490;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .requests-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .requests-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-partial {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-pending {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .btn-deliver {
+            padding: 6px 12px;
+            background: #0e7490;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .btn-deliver:hover {
+            background: #0c5f75;
+        }
+
+        .btn-deliver:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .results-cell {
+            max-width: 300px;
+            overflow: auto;
+            font-size: 0.85rem;
+        }
+
+        .btn-view {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-right: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-view:hover {
+            background: #5a6268;
+        }
+
+        .btn-delete {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .modal-close:hover {
+            color: #000;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .credentials-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .cred-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cred-label {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .cred-value {
+            font-size: 1rem;
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .docs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .docs-table th {
+            background: #0e7490;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .docs-table td {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .docs-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .docs-table a {
+            color: #0e7490;
+            text-decoration: none;
+        }
+
+        .docs-table a:hover {
+            text-decoration: underline;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 2000;
+            animation: slideIn 0.3s ease-out;
+            min-width: 300px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .toast.error {
+            color: #721c24;
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+
+        .toast.success {
+            color: #155724;
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="delivery-container">
+        <div class="delivery-header">
+            <h1>🚀 Admin Panel</h1>
+            <p>Manage user requests</p>
+        </div>
+
+
+        <div id="requestModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">Request Details</h2>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                </div>
+            </div>
+        </div>
+
+        <table class="requests-table">
+            <thead>
+                <tr>
+                    <th style="width: 60px;">ID</th>
+                    <th style="width: 120px;">RUT</th>
+                    <th style="width: 250px;">Email</th>
+                    <th style="width: 160px;">Created</th>
+                    <th style="width: 120px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="requestsBody">
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 40px;">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let requestsData = []
+
+        async function loadRequests() {
+            try {
+                const response = await fetch('/api/admin/requests')
+                const data = await response.json()
+
+                if (response.status === 401) {
+                    window.location.href = '/admin/login'
+                    return
+                }
+
+                if (!data.success) {
+                    showMessage(data.error, 'error')
+                    return
+                }
+
+                const tbody = document.getElementById('requestsBody')
+                tbody.innerHTML = ''
+
+                if (data.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">No requests found</td></tr>'
+                    return
+                }
+
+                data.data.forEach(req => {
+                    const tr = document.createElement('tr')
+                    tr.id = `req-${req.id}`
+
+                    const docs = Array.isArray(req.documents) ? req.documents : JSON.parse(req.documents || '[]')
+                    tr.innerHTML = `
+                        <td><strong>#${req.id}</strong></td>
+                        <td>${req.rut}</td>
+                        <td>${req.email}</td>
+                        <td>${new Date(req.created).toLocaleString('es-CL')}</td>
+                        <td>
+                            <button class="btn-view" onclick="openModal(${req.id})">
+                                ⓘ
+                            </button>
+                            <button class="btn-delete" onclick="deleteRequest(${req.id})">
+                                ✕
+                            </button>
+                        </td>
+                    `
+                    tbody.appendChild(tr)
+                })
+
+                requestsData = data.data
+            } catch (error) {
+                showMessage('Error loading requests: ' + error.message, 'error')
+            }
+        }
+
+        async function deliverRequest(requestId) {
+            if (!confirm(`Deliver request #${requestId}?`)) return
+
+            try {
+                const response = await fetch(`/api/admin/deliver/${requestId}`, {
+                    method: 'POST'
+                })
+                const data = await response.json()
+
+                if (response.status === 401) {
+                    window.location.href = '/admin/login'
+                    return
+                }
+
+                if (data.success) {
+                    showMessage(`Request #${requestId} delivered successfully!`, 'success')
+                    loadRequests()
+                } else {
+                    showMessage(data.error || 'Delivery failed', 'error')
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error')
+            }
+        }
+
+        async function deleteRequest(requestId) {
+            if (!confirm(`Are you sure you want to delete request #${requestId}?`)) return
+
+            try {
+                const response = await fetch(`/api/admin/requests/${requestId}`, {
+                    method: 'DELETE'
+                })
+                const data = await response.json()
+
+                if (response.status === 401) {
+                    window.location.href = '/admin/login'
+                    return
+                }
+
+                if (data.success) {
+                    showMessage(`Request #${requestId} deleted successfully!`, 'success')
+                    loadRequests()
+                } else {
+                    showMessage(data.error || 'Delete failed', 'error')
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error')
+            }
+        }
+
+        const documentUrls = {
+            'cotizaciones': 'https://webafiliados.afc.cl/WUI.AAP.OVIRTUAL/Default.aspx',
+            'deuda': 'https://conocetudeuda.cmfchile.cl/informe-deudas/622/w3-contents.html',
+            'nomatrimonio': 'https://www.registrocivil.cl/',
+            'matrimonio': 'https://www.registrocivil.cl/',
+            'nacimiento': 'https://www.registrocivil.cl/',
+            'carpeta': 'https://homer.sii.cl/',
+            'formulario22': 'https://homer.sii.cl/',
+            'declaracion': 'https://homer.sii.cl/'
+        }
+
+        function openModal(requestId) {
+            const req = requestsData.find(r => r.id === requestId)
+            if (!req) return
+
+            const docs = Array.isArray(req.documents) ? req.documents : JSON.parse(req.documents || '[]')
+            const modal = document.getElementById('requestModal')
+            const modalTitle = document.getElementById('modalTitle')
+            const modalBody = document.getElementById('modalBody')
+
+            modalTitle.textContent = `Request #${req.id}`
+
+            modalBody.innerHTML = `
+                <div class="credentials-grid">
+                    <div class="cred-item">
+                        <div class="cred-label">RUT</div>
+                        <div class="cred-value">${req.rut}</div>
+                    </div>
+                    <div class="cred-item">
+                        <div class="cred-label">Email</div>
+                        <div class="cred-value">${req.email}</div>
+                    </div>
+                    <div class="cred-item">
+                        <div class="cred-label">ClaveÚnica</div>
+                        <div class="cred-value">${req.claveunica || 'N/A'}</div>
+                    </div>
+                    <div class="cred-item">
+                        <div class="cred-label">Documento</div>
+                        <div class="cred-value">${req.documento || 'N/A'}</div>
+                    </div>
+                </div>
+
+                <h3>Documentos Solicitados</h3>
+                <table class="docs-table">
+                    <thead>
+                        <tr>
+                            <th>Documento</th>
+                            <th>URL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${docs.map(docId => `
+                            <tr>
+                                <td>${docId}</td>
+                                <td><a href="${documentUrls[docId] || '#'}" target="_blank">${documentUrls[docId] || 'N/A'}</a></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `
+
+            modal.classList.add('show')
+        }
+
+        function closeModal() {
+            document.getElementById('requestModal').classList.remove('show')
+        }
+
+        window.onclick = function (event) {
+            const modal = document.getElementById('requestModal')
+            if (event.target === modal) {
+                closeModal()
+            }
+        }
+
+        function showMessage(msg, type = 'success') {
+            const toast = document.createElement('div')
+            toast.className = `toast ${type}`
+            toast.textContent = msg
+            document.body.appendChild(toast)
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-out'
+                setTimeout(() => {
+                    document.body.removeChild(toast)
+                }, 300)
+            }, 3000)
+        }
+
+        loadRequests()
+        setInterval(loadRequests, 30000)
+    </script>
+</body>
+
+</html>
