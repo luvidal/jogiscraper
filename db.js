@@ -12,15 +12,13 @@ const db = new Database(dbPath)
 db.pragma('journal_mode = WAL')
 
 // Initialize database schema
-function initDatabase() {
+async function initDatabase() {
   const createDocumentsTableSQL = `
     CREATE TABLE IF NOT EXISTS documents (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      friendlyid TEXT UNIQUE NOT NULL,
+      id TEXT PRIMARY KEY,
       origin TEXT NOT NULL,
       label TEXT NOT NULL,
-      script TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      enabled INTEGER DEFAULT 1
     )
   `
 
@@ -40,24 +38,18 @@ function initDatabase() {
     )
   `
 
-  const createLogsTableSQL = `
-    CREATE TABLE IF NOT EXISTS logs (
+  const createAdminsTableSQL = `
+    CREATE TABLE IF NOT EXISTS admins (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-      ip TEXT,
-      method TEXT,
-      url TEXT,
-      status INTEGER,
-      response_time INTEGER,
-      user_agent TEXT,
-      referer TEXT,
-      content_length INTEGER
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      created DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `
 
   db.exec(createDocumentsTableSQL)
   db.exec(createRequestsTableSQL)
-  db.exec(createLogsTableSQL)
+  db.exec(createAdminsTableSQL)
 
   // Check if table is empty
   const count = db.prepare('SELECT COUNT(*) as count FROM documents').get()
@@ -66,19 +58,19 @@ function initDatabase() {
     console.log('Seeding documents table...')
 
     const insert = db.prepare(`
-      INSERT INTO documents (friendlyid, origin, label, script)
+      INSERT INTO documents (id, origin, label, enabled)
       VALUES (?, ?, ?, ?)
     `)
 
     const documents = [
-      ['certificado-cotizaciones', 'AFC', 'Cert. Cotizaciones', 'cotizaciones'],
-      ['informe-deuda', 'CMF', 'Informe Deuda', 'deuda'],
-      ['certificado-no-matrimonio', 'RC', 'Cert. NoMatrimonio', 'nomatrimonio'],
-      ['certificado-nacimiento', 'RC', 'Cert Nacimiento', 'nacimiento'],
-      ['certificado-matrimonio', 'RC', 'Cert. Matrimonio', 'matrimonio'],
-      ['carpeta-tributaria', 'SII', 'Carpeta Tributaria', 'carpeta'],
-      ['formulario22', 'SII', 'Formulario22 Compacto', 'formulario22'],
-      ['declaracion-aprobada', 'SII', 'Declaración Impuestos', 'declaracion']
+      ['nomatrimonio', 'Registro Civil', 'Cert. NoMatrimonio', 1],
+      ['nacimiento', 'Registro Civil', 'Cert Nacimiento', 1],
+      ['matrimonio', 'Registro Civil', 'Cert. Matrimonio', 1],
+      ['carpeta', 'SII', 'Carpeta Tributaria', 1],
+      ['formulario22', 'SII', 'Formulario22 Compacto', 1],
+      ['declaracion', 'SII', 'Declaración Impuestos', 1],
+      ['deuda', 'CMF', 'Informe Deuda', 0],
+      ['cotizaciones', 'AFC', 'Cert. Cotizaciones', 0]
     ]
 
     const insertMany = db.transaction((docs) => {
@@ -90,24 +82,49 @@ function initDatabase() {
     insertMany(documents)
     console.log(`✅ Seeded ${documents.length} documents`)
   }
+
+  // Seed admins table if empty
+  const adminCount = db.prepare('SELECT COUNT(*) as count FROM admins').get()
+  if (adminCount.count === 0) {
+    console.log('Seeding admins table...')
+    const bcrypt = await import('bcrypt')
+    const hashedPassword = await bcrypt.hash('qazx', 10)
+
+    const insertAdmin = db.prepare('INSERT INTO admins (email, password) VALUES (?, ?)')
+    const insertAdmins = db.transaction((admins) => {
+      for (const admin of admins) {
+        insertAdmin.run(admin.email, admin.password)
+      }
+    })
+
+    insertAdmins([
+      { email: 'luvidal@gmail.com', password: hashedPassword },
+      { email: 'luvidal@edictus.com', password: hashedPassword }
+    ])
+    console.log('✅ Seeded 2 admin users')
+  }
 }
 
 // Initialize on module load
-initDatabase()
+await initDatabase()
 
 // Export database instance and helper functions
 export { db }
 
 export function getAllDocuments() {
-  return db.prepare('SELECT * FROM documents ORDER BY origin, label').all()
+  return db.prepare('SELECT * FROM documents ORDER BY enabled DESC, origin, label').all()
 }
 
-export function getDocumentByFriendlyId(friendlyId) {
-  return db.prepare('SELECT * FROM documents WHERE friendlyid = ?').get(friendlyId)
+export function getDocumentById(id) {
+  return db.prepare('SELECT * FROM documents WHERE id = ?').get(id)
 }
 
 export function getDocumentByScript(script) {
-  return db.prepare('SELECT * FROM documents WHERE script = ?').get(script)
+  return getDocumentById(script)
+}
+
+export function getDocumentByFriendlyId(friendlyId) {
+  return getDocumentById(friendlyId)
 }
 
 export function getDocumentsByOrigin(origin) {
@@ -164,6 +181,12 @@ export function getRequestById(requestId) {
   return request
 }
 
+export function deleteRequest(requestId) {
+  const stmt = db.prepare('DELETE FROM requests WHERE id = ?')
+  const info = stmt.run(requestId)
+  return info.changes > 0
+}
+
 export function getAllRequests(limit = 100) {
   const requests = db.prepare('SELECT * FROM requests ORDER BY created DESC LIMIT ?').all(limit)
   return requests.map(req => ({
@@ -173,33 +196,7 @@ export function getAllRequests(limit = 100) {
   }))
 }
 
-// Logs table functions
-export function createLog(logData) {
-  const stmt = db.prepare(`
-    INSERT INTO logs (ip, method, url, status, response_time, user_agent, referer, content_length)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `)
-  stmt.run(
-    logData.ip || null,
-    logData.method || null,
-    logData.url || null,
-    logData.status || null,
-    logData.responseTime || null,
-    logData.userAgent || null,
-    logData.referer || null,
-    logData.contentLength || null
-  )
-}
-
-export function getLogs(limit = 1000, offset = 0) {
-  return db.prepare('SELECT * FROM logs ORDER BY timestamp DESC LIMIT ? OFFSET ?').all(limit, offset)
-}
-
-export function getLogsByDateRange(startDate, endDate, limit = 1000) {
-  return db.prepare(`
-    SELECT * FROM logs
-    WHERE timestamp BETWEEN ? AND ?
-    ORDER BY timestamp DESC
-    LIMIT ?
-  `).all(startDate, endDate, limit)
+// Admin functions
+export function getAdminByEmail(email) {
+  return db.prepare('SELECT * FROM admins WHERE email = ?').get(email)
 }
