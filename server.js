@@ -5,9 +5,11 @@ import { fileURLToPath } from 'url'
 import { spawn } from 'child_process'
 import livereload from 'livereload'
 import connectLivereload from 'connect-livereload'
+import session from 'express-session'
+import bcrypt from 'bcrypt'
 import * as scripts from './index.js'
-import { getAllDocuments, getDocumentByFriendlyId, getDocumentsByOrigin, createRequest, updateRequestResults, getRequestById, createLog, getPendingRequestsByRut, updateRequestStatus } from './db.js'
-import { sendRequestNotification } from './email.js'
+import { getAllDocuments, getDocumentById, getDocumentsByOrigin, createRequest, updateRequestResults, getRequestById, getPendingRequestsByRut, updateRequestStatus, getAllRequests, deleteRequest, getAdminByEmail } from './db.js'
+import { sendRequestNotification, sendNewRequestNotification } from './email.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -17,38 +19,18 @@ const app = express()
 app.set('trust proxy', true)
 app.use(express.json())
 
-// Custom logging middleware to write to database
-app.use((req, res, next) => {
-  const startTime = Date.now()
-
-  // Capture original end function
-  const originalEnd = res.end
-
-  res.end = function(...args) {
-    const responseTime = Date.now() - startTime
-
-    // Write log to database
-    try {
-      createLog({
-        ip: req.ip || req.connection.remoteAddress,
-        method: req.method,
-        url: req.originalUrl || req.url,
-        status: res.statusCode,
-        responseTime,
-        userAgent: req.get('user-agent') || null,
-        referer: req.get('referer') || null,
-        contentLength: res.get('content-length') || null
-      })
-    } catch (err) {
-      console.error('Failed to write log to database:', err)
-    }
-
-    // Call original end function
-    originalEnd.apply(res, args)
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'jogiscraper-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000
   }
+}))
 
-  next()
-})
 
 // Enable livereload in development (must be before static files)
 if (process.env.NODE_ENV !== 'production') {
@@ -62,6 +44,19 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')))
+
+// Admin login page
+app.get('/admin/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin', 'login.html'))
+})
+
+// Admin panel - protected route
+app.get('/admin', (req, res) => {
+  if (!req.session.adminId) {
+    return res.redirect('/admin/login')
+  }
+  res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'))
+})
 
 // API routes with JSON response
 const apiRouter = express.Router()
@@ -98,9 +93,9 @@ apiRouter.get('/documents', (_, res) => {
   }
 })
 
-apiRouter.get('/documents/:friendlyId', (req, res) => {
+apiRouter.get('/documents/:id', (req, res) => {
   try {
-    const document = getDocumentByFriendlyId(req.params.friendlyId)
+    const document = getDocumentById(req.params.id)
     if (!document) {
       return res.status(404).json({ success: false, error: 'Document not found' })
     }
@@ -122,9 +117,9 @@ apiRouter.get('/documents/origin/:origin', (req, res) => {
 // Submit multiple services request
 apiRouter.post('/submit-request', async (req, res) => {
   try {
-    const { rut, claveunica, documento, requesterEmail, services, deliveryMethod = 'email' } = req.body
+    const { rut, claveunica, documento, email, services, deliveryMethod = 'email' } = req.body
 
-    if (!rut || !claveunica || !documento || !requesterEmail || !services || services.length === 0) {
+    if (!rut || !claveunica || !documento || !email || !services || services.length === 0) {
       return res.status(400).json({ success: false, error: 'Missing required fields' })
     }
 
@@ -144,7 +139,18 @@ apiRouter.post('/submit-request', async (req, res) => {
     }
 
     // Create request record with delivery method
-    const requestId = createRequest(rut, requesterEmail, services, claveunica, documento, deliveryMethod)
+    const requestId = createRequest(rut, email, services, claveunica, documento, deliveryMethod)
+
+    // Send notification email for new request (non-blocking)
+    sendNewRequestNotification({
+      requestId,
+      rut,
+      email,
+      documento,
+      documents: services,
+      deliveryMethod,
+      claveunica
+    }).catch(err => console.error(`[Request ${requestId}] Failed to send new request email:`, err))
 
     // Return immediately - processing will happen in background
     res.json({
@@ -152,9 +158,9 @@ apiRouter.post('/submit-request', async (req, res) => {
       requestId
     })
 
-    // Process in background (non-blocking)
-    processRequestInBackground(requestId, req.body)
-      .catch(err => console.error(`Background processing failed for request ${requestId}:`, err))
+    // Process in background (non-blocking) - PAUSED
+    // processRequestInBackground(requestId, req.body)
+    //   .catch(err => console.error(`Background processing failed for request ${requestId}:`, err))
   } catch (error) {
     console.error('Error submitting request:', error)
     res.status(500).json({ success: false, error: error.message })
@@ -167,7 +173,7 @@ async function processRequestInBackground(requestId, data) {
     // Update status to processing
     updateRequestStatus(requestId, 'processing')
 
-    const { rut, requesterEmail, services, deliveryMethod } = data
+    const { rut, email, services, deliveryMethod } = data
     const results = []
     const basePayload = { ...data }
     delete basePayload.services
@@ -234,7 +240,7 @@ async function processRequestInBackground(requestId, data) {
     sendRequestNotification({
       requestId,
       rut,
-      email: requesterEmail,
+      email,
       documents: services,
       results,
       deliveryMethod
@@ -244,6 +250,122 @@ async function processRequestInBackground(requestId, data) {
     updateRequestStatus(requestId, 'failed')
   }
 }
+
+// Admin session middleware
+const requireAdmin = (req, res, next) => {
+  if (!req.session.adminId) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' })
+  }
+  next()
+}
+
+// Admin login endpoint
+apiRouter.post('/admin/login', async (req, res) => {
+  try {
+    const { email, password } = req.body
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, error: 'Email and password required' })
+    }
+
+    const admin = getAdminByEmail(email)
+    if (!admin) {
+      return res.status(401).json({ success: false, error: 'Invalid credentials' })
+    }
+
+    const validPassword = await bcrypt.compare(password, admin.password)
+    if (!validPassword) {
+      return res.status(401).json({ success: false, error: 'Invalid credentials' })
+    }
+
+    req.session.adminId = admin.id
+    req.session.adminEmail = admin.email
+
+    res.json({ success: true, message: 'Login successful' })
+  } catch (error) {
+    console.error('Login error:', error)
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
+// Admin logout endpoint
+apiRouter.post('/admin/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ success: false, error: 'Logout failed' })
+    }
+    res.json({ success: true, message: 'Logged out' })
+  })
+})
+
+// Admin: Get all requests
+apiRouter.get('/admin/requests', requireAdmin, (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 100
+    const requests = getAllRequests(limit)
+    res.json({ success: true, data: requests })
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
+// Admin: Deliver request (send email with files)
+apiRouter.post('/admin/deliver/:id', requireAdmin, async (req, res) => {
+  try {
+    const requestId = parseInt(req.params.id)
+    const request = getRequestById(requestId)
+
+    if (!request) {
+      return res.status(404).json({ success: false, error: 'Request not found' })
+    }
+
+    if (request.status !== 'completed' && request.status !== 'partial') {
+      return res.status(400).json({ success: false, error: 'Request not ready for delivery' })
+    }
+
+    // Send delivery notification
+    await sendRequestNotification({
+      requestId: request.id,
+      rut: request.rut,
+      email: request.email,
+      documents: JSON.parse(request.documents),
+      results: JSON.parse(request.results || '[]')
+    })
+
+    res.json({ success: true, message: 'Delivery email sent' })
+  } catch (error) {
+    console.error('Delivery error:', error)
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
+// Admin: Delete request
+apiRouter.delete('/admin/requests/:id', requireAdmin, (req, res) => {
+  try {
+    const requestId = parseInt(req.params.id)
+    const deleted = deleteRequest(requestId)
+
+    if (deleted) {
+      res.json({ success: true, message: 'Request deleted successfully' })
+    } else {
+      res.status(404).json({ success: false, error: 'Request not found' })
+    }
+  } catch (error) {
+    console.error('Delete error:', error)
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
+// Get all requests (public, for backward compatibility)
+apiRouter.get('/requests', (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 100
+    const requests = getAllRequests(limit)
+    res.json({ success: true, data: requests })
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
 
 // Get request by ID
 apiRouter.get('/requests/:id', (req, res) => {
@@ -258,24 +380,11 @@ apiRouter.get('/requests/:id', (req, res) => {
   }
 })
 
-// protection middleware for internal routes
-const protect = (handler) => (req, res, next) => {
-  if (req.headers['x-internal-key'] !== process.env.INTERNAL_API_KEY) {
-    return res.status(401).json({ error: 'Unauthorized' })
-  }
-  handler(req, res, next)
-}
-
-// Public API routes (no auth required for frontend)
+// Public API routes
 Object.entries(scripts).forEach(([name, handler]) => {
   if (name !== 'test') {
     apiRouter.post(`/${name}`, handler)
   }
-})
-
-// Protected routes (with auth)
-Object.entries(scripts).forEach(([name, handler]) => {
-  apiRouter.post(`/protected/${name}`, protect(handler))
 })
 
 app.use('/api', apiRouter)
