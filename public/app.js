@@ -6,8 +6,8 @@ const submitBtn = document.getElementById('submitBtn');
 const btnText = submitBtn.querySelector('.btn-text');
 const btnLoader = submitBtn.querySelector('.btn-loader');
 const resultDiv = document.getElementById('result');
-const requesterEmailInput = document.getElementById('requesterEmail');
-const requesterEmailGroup = document.getElementById('requesterEmailGroup');
+const emailInput = document.getElementById('email');
+const emailGroup = document.getElementById('emailGroup');
 
 let documentsData = [];
 let selectedServices = new Set();
@@ -21,13 +21,13 @@ function checkUrlParams() {
 
     if (fromParam && fromParam.includes('@')) {
         // Valid email provided in URL - hide the field and pre-fill
-        requesterEmailInput.value = fromParam;
-        requesterEmailGroup.style.display = 'none';
-        requesterEmailInput.required = false;
+        emailInput.value = fromParam;
+        emailGroup.style.display = 'none';
+        emailInput.required = false;
     } else {
         // No email in URL - show the field as required
-        requesterEmailGroup.style.display = 'block';
-        requesterEmailInput.required = true;
+        emailGroup.style.display = 'block';
+        emailInput.required = true;
     }
 }
 
@@ -189,8 +189,12 @@ async function loadDocuments() {
 function populateServiceSelect(documents) {
     servicesContainer.innerHTML = '';
 
-    // Group by origin
-    const grouped = documents.reduce((acc, doc) => {
+    // Separate enabled and disabled documents
+    const enabledDocs = documents.filter(doc => doc.enabled);
+    const disabledDocs = documents.filter(doc => !doc.enabled);
+
+    // Group enabled documents by origin
+    const groupedEnabled = enabledDocs.reduce((acc, doc) => {
         if (!acc[doc.origin]) {
             acc[doc.origin] = [];
         }
@@ -198,57 +202,116 @@ function populateServiceSelect(documents) {
         return acc;
     }, {});
 
-    // Create checkboxes grouped by origin
-    Object.keys(grouped).sort().forEach(origin => {
-        const groupDiv = document.createElement('div');
-        groupDiv.className = 'service-group';
+    // Group disabled documents by origin
+    const groupedDisabled = disabledDocs.reduce((acc, doc) => {
+        if (!acc[doc.origin]) {
+            acc[doc.origin] = [];
+        }
+        acc[doc.origin].push(doc);
+        return acc;
+    }, {});
 
-        const groupTitle = document.createElement('div');
-        groupTitle.className = 'service-group-title';
-        groupTitle.textContent = origin;
-        groupDiv.appendChild(groupTitle);
+    // Render enabled documents first
+    Object.keys(groupedEnabled).sort().forEach(origin => {
+        renderOriginGroup(origin, groupedEnabled[origin]);
+    });
 
-        grouped[origin].forEach(doc => {
-            const checkboxDiv = document.createElement('div');
-            checkboxDiv.className = 'service-checkbox';
+    // Render disabled documents last
+    Object.keys(groupedDisabled).sort().forEach(origin => {
+        renderOriginGroup(origin, groupedDisabled[origin]);
+    });
+}
 
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = `service-${doc.script}`;
-            checkbox.value = doc.script;
-            checkbox.dataset.friendlyId = doc.friendlyid;
+function renderOriginGroup(origin, docs) {
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'service-group';
 
-            checkbox.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    selectedServices.add(doc.script);
-                    if (doc.script === 'carpeta') {
-                        carpetaFields.style.display = 'block';
-                        document.getElementById('username').required = true;
-                        document.getElementById('email').required = true;
+    const groupTitle = document.createElement('div');
+    groupTitle.className = 'service-group-title';
+    groupTitle.textContent = origin;
+    groupDiv.appendChild(groupTitle);
+
+    docs.forEach(doc => {
+        const checkboxDiv = document.createElement('div');
+        checkboxDiv.className = 'service-checkbox';
+        if (!doc.enabled) {
+            checkboxDiv.classList.add('disabled');
+        }
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `service-${doc.id}`;
+        checkbox.value = doc.id;
+        checkbox.dataset.documentId = doc.id;
+        checkbox.disabled = !doc.enabled;
+
+        checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                selectedServices.add(doc.id);
+                if (doc.id === 'carpeta') {
+                    carpetaFields.style.display = 'block';
+                    document.getElementById('username').required = true;
+                }
+                // Mutual exclusion for matrimonio certificates
+                if (doc.id === 'matrimonio') {
+                    const nomatrimonioCheckbox = document.getElementById('service-nomatrimonio');
+                    if (nomatrimonioCheckbox?.checked) {
+                        nomatrimonioCheckbox.checked = false;
+                        selectedServices.delete('nomatrimonio');
                     }
-                } else {
-                    selectedServices.delete(doc.script);
-                    // Hide carpeta fields only if carpeta is not selected
-                    if (doc.script === 'carpeta' && !selectedServices.has('carpeta')) {
-                        carpetaFields.style.display = 'none';
-                        document.getElementById('username').required = false;
-                        document.getElementById('email').required = false;
+                } else if (doc.id === 'nomatrimonio') {
+                    const matrimonioCheckbox = document.getElementById('service-matrimonio');
+                    if (matrimonioCheckbox?.checked) {
+                        matrimonioCheckbox.checked = false;
+                        selectedServices.delete('matrimonio');
                     }
                 }
-                servicesError.style.display = 'none';
-            });
-
-            const label = document.createElement('label');
-            label.htmlFor = `service-${doc.script}`;
-            label.textContent = doc.label;
-
-            checkboxDiv.appendChild(checkbox);
-            checkboxDiv.appendChild(label);
-            groupDiv.appendChild(checkboxDiv);
+            } else {
+                selectedServices.delete(doc.id);
+                // Hide carpeta fields only if carpeta is not selected
+                if (doc.id === 'carpeta' && !selectedServices.has('carpeta')) {
+                    carpetaFields.style.display = 'none';
+                    document.getElementById('username').required = false;
+                }
+            }
+            servicesError.style.display = 'none';
+            updateDocumentoFieldVisibility();
+            updateNextButtonState();
         });
 
-        servicesContainer.appendChild(groupDiv);
+        const label = document.createElement('label');
+        label.htmlFor = `service-${doc.id}`;
+        label.textContent = doc.label;
+        if (!doc.enabled) {
+            label.textContent += ' (No disponible - 2FA requerido)';
+        }
+
+        checkboxDiv.appendChild(checkbox);
+        checkboxDiv.appendChild(label);
+        groupDiv.appendChild(checkboxDiv);
     });
+
+    servicesContainer.appendChild(groupDiv);
+}
+
+// Update documento field visibility based on Registro Civil selection
+function updateDocumentoFieldVisibility() {
+    const registroCivilDocs = ['matrimonio', 'nomatrimonio', 'nacimiento'];
+    const hasRegistroCivil = Array.from(selectedServices).some(service => registroCivilDocs.includes(service));
+    const documentoGroup = document.getElementById('documento')?.closest('.form-group');
+
+    if (documentoGroup) {
+        documentoGroup.style.display = hasRegistroCivil ? 'block' : 'none';
+        document.getElementById('documento').required = hasRegistroCivil;
+    }
+}
+
+// Update next button state based on service selection
+function updateNextButtonState() {
+    const nextBtn = document.getElementById('nextBtn');
+    if (currentStep === 1) {
+        nextBtn.disabled = selectedServices.size === 0;
+    }
 }
 
 // Load documents on page load
@@ -271,9 +334,16 @@ function showStep(step) {
     const nextBtn = document.getElementById('nextBtn');
     const submitBtn = document.getElementById('submitBtn');
 
-    prevBtn.style.display = step === 1 ? 'none' : 'inline-block';
+    prevBtn.style.display = 'inline-block';
+    prevBtn.disabled = step === 1;
     nextBtn.style.display = step === totalSteps ? 'none' : 'inline-block';
+    nextBtn.disabled = false;
     submitBtn.style.display = step === totalSteps ? 'inline-block' : 'none';
+
+    // Update next button state for step 1 (services selection)
+    if (step === 1) {
+        updateNextButtonState();
+    }
 
     // Populate confirmation summary on step 4
     if (step === 4) {
@@ -283,24 +353,37 @@ function showStep(step) {
     // Update email preview in step 3
     if (step === 3) {
         const emailPreviewInStep = document.querySelector('#step3 #emailPreview');
-        const requesterEmail = document.getElementById('requesterEmail').value;
-        if (emailPreviewInStep && requesterEmail) {
-            emailPreviewInStep.textContent = requesterEmail;
+        const email = document.getElementById('email').value;
+        if (emailPreviewInStep && email) {
+            emailPreviewInStep.textContent = email;
         }
     }
 }
 
 function validateStep(step) {
     if (step === 1) {
+        // Validate services selection
+        if (selectedServices.size === 0) {
+            servicesError.style.display = 'block';
+            servicesError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        servicesError.style.display = 'none';
+        return true;
+    } else if (step === 2) {
         // Validate credentials
         const rut = document.getElementById('rut');
         const claveunica = document.getElementById('claveunica');
         const documento = document.getElementById('documento');
-        const requesterEmail = document.getElementById('requesterEmail');
+        const email = document.getElementById('email');
 
-        const fields = [rut, claveunica, documento];
-        if (requesterEmail.required) {
-            fields.push(requesterEmail);
+        const fields = [rut, claveunica];
+        if (documento.required) {
+            fields.push(documento);
+        }
+        if (email.required) {
+            fields.push(email);
         }
 
         for (const field of fields) {
@@ -319,38 +402,21 @@ function validateStep(step) {
         }
 
         // Validate email format if required
-        if (requesterEmail.required && !requesterEmail.checkValidity()) {
-            requesterEmail.reportValidity();
-            return false;
-        }
-
-        return true;
-    } else if (step === 2) {
-        // Validate services selection
-        if (selectedServices.size === 0) {
-            servicesError.style.display = 'block';
-            servicesError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (email.required && !email.checkValidity()) {
+            email.reportValidity();
             return false;
         }
 
         // Validate carpeta fields if carpeta is selected
         if (selectedServices.has('carpeta')) {
             const username = document.getElementById('username');
-            const email = document.getElementById('email');
 
-            if (!username.value.trim() || !email.value.trim()) {
-                if (!username.value.trim()) username.reportValidity();
-                else if (!email.value.trim()) email.reportValidity();
-                return false;
-            }
-
-            if (!email.checkValidity()) {
-                email.reportValidity();
+            if (!username.value.trim()) {
+                username.reportValidity();
                 return false;
             }
         }
 
-        servicesError.style.display = 'none';
         return true;
     } else if (step === 3) {
         // Validate delivery method selection
@@ -371,21 +437,32 @@ function validateStep(step) {
 }
 
 function populateConfirmationSummary() {
-    // Populate credentials
-    document.getElementById('summary-rut').textContent = document.getElementById('rut').value;
-    document.getElementById('summary-documento').textContent = document.getElementById('documento').value;
-    document.getElementById('summary-email').textContent = document.getElementById('requesterEmail').value;
-
     // Populate services
     const servicesList = document.getElementById('summary-services');
     servicesList.innerHTML = '';
-    selectedServices.forEach(serviceScript => {
-        const serviceDoc = documentsData.find(d => d.script === serviceScript);
-        const serviceName = serviceDoc ? serviceDoc.label : serviceScript;
+    selectedServices.forEach(serviceId => {
+        const serviceDoc = documentsData.find(d => d.id === serviceId);
+        const serviceName = serviceDoc ? serviceDoc.label : serviceId;
         const li = document.createElement('li');
         li.textContent = serviceName;
         servicesList.appendChild(li);
     });
+
+    // Populate credentials
+    document.getElementById('summary-rut').textContent = document.getElementById('rut').value;
+    document.getElementById('summary-email').textContent = document.getElementById('email').value;
+
+    // Show/hide documento based on Registro Civil selection
+    const registroCivilDocs = ['matrimonio', 'nomatrimonio', 'nacimiento'];
+    const hasRegistroCivil = Array.from(selectedServices).some(service => registroCivilDocs.includes(service));
+    const documentoRow = document.getElementById('summary-documento-row');
+
+    if (hasRegistroCivil) {
+        documentoRow.style.display = 'block';
+        document.getElementById('summary-documento').textContent = document.getElementById('documento').value;
+    } else {
+        documentoRow.style.display = 'none';
+    }
 
     // Populate delivery methods
     const deliveryList = document.getElementById('summary-delivery');
@@ -394,7 +471,7 @@ function populateConfirmationSummary() {
     selectedMethods.forEach(checkbox => {
         const li = document.createElement('li');
         if (checkbox.value === 'email') {
-            li.textContent = `Por email al correo ${document.getElementById('requesterEmail').value}`;
+            li.textContent = `Por email al correo ${document.getElementById('email').value}`;
         } else if (checkbox.value === 'jogi') {
             li.textContent = 'En mis carpetas en Jogi';
         }
@@ -459,7 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Load saved values from localStorage
-    const formInputs = ['rut', 'documento', 'requesterEmail', 'username', 'email'];
+    const formInputs = ['rut', 'documento', 'email', 'username'];
     formInputs.forEach(fieldName => {
         const input = document.getElementById(fieldName) || document.querySelector(`[name="${fieldName}"]`);
         if (input) {
@@ -514,7 +591,7 @@ form.addEventListener('submit', async (e) => {
         rut: formData.get('rut'),
         claveunica: formData.get('claveunica'),
         documento: formData.get('documento'),
-        requesterEmail: formData.get('requesterEmail'),
+        email: formData.get('email'),
         services: Array.from(selectedServices),
         deliveryMethod: selectedMethods
     };
@@ -547,7 +624,7 @@ async function submitRequest(deliveryMethod, payload) {
 
         if (data.success) {
             // Show success message for background job
-            showSuccessMessage(data.requestId, deliveryMethod, payload.requesterEmail);
+            showSuccessMessage(data.requestId, deliveryMethod, payload.email);
             // Reset form and go back to step 1
             form.reset();
             selectedServices.clear();
@@ -631,7 +708,7 @@ function showMultipleResults(results, requestId = null) {
     html += `</div>`;
 
     results.forEach(result => {
-        const serviceDoc = documentsData.find(d => d.script === result.service);
+        const serviceDoc = documentsData.find(d => d.id === result.service);
         const serviceName = serviceDoc ? serviceDoc.label : result.service;
 
         html += `<div class="result-item ${result.success ? 'success' : 'error'}">`;
