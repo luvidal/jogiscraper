@@ -7,7 +7,7 @@ function isEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
-export async function sendEmail({ to, subject, html }) {
+export async function sendEmail({ to, subject, html, attachments = [] }) {
   if (!isEmail(to)) throw new Error('Invalid email')
 
   const { SES_SMTP_USER: user, SES_SMTP_PASS: pass } = process.env
@@ -29,7 +29,8 @@ export async function sendEmail({ to, subject, html }) {
       to: to.trim().toLowerCase(),
       subject,
       html,
-      text: htmlToText(html)
+      text: htmlToText(html),
+      attachments
     })
     return result
   } catch (error) {
@@ -198,5 +199,66 @@ export async function sendRequestNotification({ requestId, rut, email, documents
     to: 'luvidal@edictus.com',
     subject,
     html
+  })
+}
+
+export async function sendFilesEmail({ to, rut, requestId, files }) {
+  const fileList = files.map(f => f.filename).join(', ')
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #020617 0%, #0e7490 55%, #020617 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 20px; border: 1px solid #ddd; }
+        .footer { background: #f1f1f1; padding: 15px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px; }
+        .file-list { margin: 15px 0; padding: 15px; background: #e8f5e9; border-radius: 6px; border-left: 4px solid #28a745; }
+        .file-list ul { margin: 10px 0 0 0; padding-left: 20px; }
+        .file-list li { margin: 5px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h2>Documentos Listos</h2>
+        </div>
+        <div class="content">
+          <p>Hola,</p>
+          <p>Los documentos solicitados para el RUT <strong>${rut}</strong> están listos y adjuntos a este correo.</p>
+
+          <div class="file-list">
+            <strong>Archivos adjuntos (${files.length}):</strong>
+            <ul>
+              ${files.map(f => `<li>${f.filename}</li>`).join('')}
+            </ul>
+          </div>
+
+          <p style="margin-top: 20px; color: #666; font-size: 0.9rem;">
+            Si tiene alguna pregunta, no dude en contactarnos.
+          </p>
+        </div>
+        <div class="footer">
+          <p>&copy; ${new Date().getFullYear()} JogiScraper</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+
+  // Convert files to nodemailer attachment format
+  const attachments = files.map(f => ({
+    filename: f.filename,
+    content: f.content,
+    contentType: f.contentType
+  }))
+
+  return sendEmail({
+    to,
+    subject: `Documentos Listos - Solicitud #${requestId}`,
+    html,
+    attachments
   })
 }

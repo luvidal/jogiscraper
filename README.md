@@ -69,6 +69,19 @@ jogiscraper/
 | POST | `/api/formulario22` | rut, claveunica, year |
 | POST | `/api/carpeta` | rut, claveunica, username, email |
 
+### Admin Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/admin` | Admin panel dashboard |
+| GET | `/admin/login` | Admin login page |
+| POST | `/api/admin/login` | Admin authentication |
+| POST | `/api/admin/logout` | Admin logout |
+| GET | `/api/admin/requests` | List all requests (protected) |
+| POST | `/api/admin/deliver/:id` | Send notification email |
+| POST | `/api/admin/deliver-files/:id` | Deliver files via email and/or Jogi |
+| DELETE | `/api/admin/requests/:id` | Delete request |
+
 ### Protected Endpoints
 
 All document endpoints are also available at `/api/protected/:service` requiring the `x-internal-key` header.
@@ -131,3 +144,35 @@ npm start
 - **RUT Validation**: Full Chilean RUN algorithm verification
 - **Multi-Service Requests**: Request multiple documents in single submission
 - **Email Delivery**: Results can be emailed via AWS SES
+- **Jogi Integration**: Upload files directly to Jogi user accounts
+- **Admin Panel**: Drag-and-drop file delivery interface
+
+## Admin Panel
+
+The admin panel (`/admin`) provides a dashboard to manage user requests:
+
+### Features
+
+1. **View Requests**: See all pending and completed requests with user details
+2. **Request Details**: Click on any request to view credentials and requested documents
+3. **Drag & Drop Upload**: Upload files directly in the modal (PDF, JPG, PNG, GIF, WebP)
+4. **Delivery Options**: Files are delivered based on user's selected method:
+   - **Email**: Sends files as attachments to user's email
+   - **Jogi**: Uploads files to user's Jogi account (requires Jogi API integration)
+
+### Jogi Integration Setup
+
+To enable Jogi integration, add these environment variables:
+
+```bash
+# Jogi API integration
+JOGI_API_URL=https://jogi.cl         # Jogi base URL
+JOGI_API_SECRET=your-shared-secret   # Must match EXTERNAL_API_SECRET in Jogi
+```
+
+The integration uses Jogi's external upload API (`/api/v1/files/external-upload`) which:
+- Authenticates using the shared secret
+- Matches files to users by email address
+- Processes files through AI classification
+- Links files to user's hooks/requirements
+- Notifies users of uploaded documents

@@ -7,9 +7,12 @@ import livereload from 'livereload'
 import connectLivereload from 'connect-livereload'
 import session from 'express-session'
 import bcrypt from 'bcrypt'
+import multer from 'multer'
+import FormData from 'form-data'
+import archiver from 'archiver'
 import * as scripts from './index.js'
 import { getAllDocuments, getDocumentById, getDocumentsByOrigin, createRequest, updateRequestResults, getRequestById, getPendingRequestsByRut, updateRequestStatus, getAllRequests, deleteRequest, getAdminByEmail } from './db.js'
-import { sendRequestNotification, sendNewRequestNotification } from './email.js'
+import { sendRequestNotification, sendNewRequestNotification, sendFilesEmail } from './email.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -18,6 +21,20 @@ dotenv.config()
 const app = express()
 app.set('trust proxy', true)
 app.use(express.json())
+
+// Multer configuration for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true)
+    } else {
+      cb(new Error(`Unsupported file type: ${file.mimetype}`), false)
+    }
+  }
+})
 
 // Session configuration
 app.use(session({
@@ -335,6 +352,118 @@ apiRouter.post('/admin/deliver/:id', requireAdmin, async (req, res) => {
     res.json({ success: true, message: 'Delivery email sent' })
   } catch (error) {
     console.error('Delivery error:', error)
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
+// Admin: Deliver files to user (email and/or jogi upload)
+apiRouter.post('/admin/deliver-files/:id', requireAdmin, upload.array('files', 20), async (req, res) => {
+  try {
+    const requestId = parseInt(req.params.id)
+    const request = getRequestById(requestId)
+
+    if (!request) {
+      return res.status(404).json({ success: false, error: 'Request not found' })
+    }
+
+    const files = req.files || []
+    if (files.length === 0) {
+      return res.status(400).json({ success: false, error: 'No files provided' })
+    }
+
+    // Parse delivery methods from request body or from stored request
+    let deliveryMethods = ['email']
+    try {
+      if (req.body.deliveryMethods) {
+        deliveryMethods = JSON.parse(req.body.deliveryMethods)
+      } else if (request.delivery_method) {
+        const parsed = JSON.parse(request.delivery_method)
+        deliveryMethods = Array.isArray(parsed) ? parsed : [parsed]
+      }
+    } catch {
+      // Use default
+    }
+
+    const results = { email: null, jogi: null }
+
+    // Deliver via email
+    if (deliveryMethods.includes('email')) {
+      try {
+        await sendFilesEmail({
+          to: request.email,
+          rut: request.rut,
+          requestId,
+          files: files.map(f => ({
+            filename: f.originalname,
+            content: f.buffer,
+            contentType: f.mimetype
+          }))
+        })
+        results.email = { success: true, message: 'Email sent' }
+      } catch (error) {
+        console.error('Email delivery error:', error)
+        results.email = { success: false, error: error.message }
+      }
+    }
+
+    // Deliver to Jogi
+    if (deliveryMethods.includes('jogi')) {
+      try {
+        const jogiUrl = process.env.JOGI_API_URL || 'https://jogi.cl'
+        const jogiSecret = process.env.JOGI_API_SECRET
+
+        if (!jogiSecret) {
+          results.jogi = { success: false, error: 'JOGI_API_SECRET not configured' }
+        } else {
+          // Create FormData for multipart upload
+          const formData = new FormData()
+          formData.append('email', request.email)
+          formData.append('source', 'jogiscraper')
+
+          for (const file of files) {
+            formData.append('files', file.buffer, {
+              filename: file.originalname,
+              contentType: file.mimetype
+            })
+          }
+
+          const response = await fetch(`${jogiUrl}/api/v1/files/external-upload`, {
+            method: 'POST',
+            headers: {
+              'x-api-secret': jogiSecret,
+              ...formData.getHeaders()
+            },
+            body: formData
+          })
+
+          const data = await response.json()
+
+          if (data.success) {
+            results.jogi = {
+              success: true,
+              processed: data.processed,
+              files: data.files
+            }
+          } else {
+            results.jogi = { success: false, error: data.error || 'Upload failed' }
+          }
+        }
+      } catch (error) {
+        console.error('Jogi delivery error:', error)
+        results.jogi = { success: false, error: error.message }
+      }
+    }
+
+    // Check if at least one delivery method succeeded
+    const anySuccess = (results.email?.success) || (results.jogi?.success)
+
+    res.json({
+      success: anySuccess,
+      results,
+      message: anySuccess ? 'Files delivered successfully' : 'All delivery methods failed'
+    })
+  } catch (error) {
+    console.error('Deliver files error:', error)
     res.status(500).json({ success: false, error: error.message })
   }
 })

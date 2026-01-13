@@ -237,6 +237,40 @@
             word-break: break-word;
         }
 
+        .cred-value.password {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .password-text {
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        .password-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            color: #6c757d;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .password-toggle:hover {
+            background: #e9ecef;
+            color: #0e7490;
+        }
+
+        .password-toggle svg {
+            width: 18px;
+            height: 18px;
+        }
+
         .docs-table {
             width: 100%;
             border-collapse: collapse;
@@ -315,6 +349,212 @@
             color: #155724;
             background: #d4edda;
             border-left: 4px solid #28a745;
+        }
+
+        /* Drag & Drop Zone */
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .drop-zone.dragover {
+            border-color: #0e7490;
+            background: #e0f7fa;
+        }
+
+        .drop-zone-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .drop-zone-text {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .drop-zone-hint {
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .file-list {
+            margin: 15px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 6px;
+        }
+
+        .file-item-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-item-name {
+            font-weight: 500;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-item-size {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .file-remove {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0 5px;
+        }
+
+        .file-remove:hover {
+            color: #c82333;
+        }
+
+        /* Delivery Methods in Modal */
+        .delivery-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .delivery-section h4 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .delivery-methods {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .delivery-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .delivery-badge.email {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .delivery-badge.jogi {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        /* Enviar Button */
+        .btn-enviar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .btn-enviar:hover {
+            background: linear-gradient(135deg, #0c5f75 0%, #0e7490 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(14, 116, 144, 0.3);
+        }
+
+        .btn-enviar:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-enviar .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .btn-enviar.loading .spinner {
+            display: inline-block;
+        }
+
+        .btn-enviar.loading .btn-text {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Upload Progress */
+        .upload-progress {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .upload-progress.show {
+            display: block;
+        }
+
+        .progress-bar-container {
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            height: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #0e7490, #0891b2);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
         }
     </style>
 </head>
@@ -471,11 +711,20 @@
             'declaracion': 'https://homer.sii.cl/'
         }
 
+        // Track files for current modal
+        let currentRequestId = null
+        let uploadedFiles = []
+
         function openModal(requestId) {
             const req = requestsData.find(r => r.id === requestId)
             if (!req) return
 
+            currentRequestId = requestId
+            uploadedFiles = []
+            passwordVisible = false
+
             const docs = Array.isArray(req.documents) ? req.documents : JSON.parse(req.documents || '[]')
+            const deliveryMethods = parseDeliveryMethods(req.delivery_method)
             const modal = document.getElementById('requestModal')
             const modalTitle = document.getElementById('modalTitle')
             const modalBody = document.getElementById('modalBody')
@@ -494,7 +743,17 @@
                     </div>
                     <div class="cred-item">
                         <div class="cred-label">ClaveÚnica</div>
-                        <div class="cred-value">${req.claveunica || 'N/A'}</div>
+                        <div class="cred-value password">
+                            <span class="password-text" id="passwordText">${req.claveunica ? '••••••••' : 'N/A'}</span>
+                            ${req.claveunica ? `
+                            <button class="password-toggle" onclick="togglePassword('${req.claveunica}')" title="Mostrar/ocultar contraseña">
+                                <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                            ` : ''}
+                        </div>
                     </div>
                     <div class="cred-item">
                         <div class="cred-label">Documento</div>
@@ -519,9 +778,240 @@
                         `).join('')}
                     </tbody>
                 </table>
+
+                <div class="delivery-section">
+                    <h4>Método de Entrega</h4>
+                    <div class="delivery-methods">
+                        ${deliveryMethods.includes('email') ? '<span class="delivery-badge email">📧 Email</span>' : ''}
+                        ${deliveryMethods.includes('jogi') ? '<span class="delivery-badge jogi">📁 Jogi</span>' : ''}
+                        ${deliveryMethods.length === 0 ? '<span style="color: #999;">No especificado</span>' : ''}
+                    </div>
+                </div>
+
+                <div class="delivery-section">
+                    <h4>Subir Archivos para Entregar</h4>
+                    <div class="drop-zone" id="dropZone">
+                        <div class="drop-zone-icon">📄</div>
+                        <div class="drop-zone-text">Arrastra archivos aquí o haz clic para seleccionar</div>
+                        <div class="drop-zone-hint">PDF, JPG, PNG (máx. 20MB por archivo)</div>
+                        <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp" style="display: none;">
+                    </div>
+                    <div class="file-list" id="fileList"></div>
+
+                    <div class="upload-progress" id="uploadProgress">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">Procesando...</div>
+                    </div>
+
+                    <button class="btn-enviar" id="btnEnviar" onclick="enviarArchivos(${req.id})" disabled>
+                        <span class="spinner"></span>
+                        <span class="btn-text">Enviar Archivos</span>
+                    </button>
+                </div>
             `
 
+            // Setup drag & drop
+            setupDropZone()
+
             modal.classList.add('show')
+        }
+
+        function parseDeliveryMethods(deliveryMethod) {
+            if (!deliveryMethod) return ['email']
+            try {
+                const parsed = JSON.parse(deliveryMethod)
+                return Array.isArray(parsed) ? parsed : [parsed]
+            } catch {
+                return [deliveryMethod]
+            }
+        }
+
+        let passwordVisible = false
+        function togglePassword(password) {
+            const textEl = document.getElementById('passwordText')
+            const iconEl = document.getElementById('eyeIcon')
+
+            passwordVisible = !passwordVisible
+
+            if (passwordVisible) {
+                textEl.textContent = password
+                // Change to eye-off icon
+                iconEl.innerHTML = `
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                `
+            } else {
+                textEl.textContent = '••••••••'
+                // Change back to eye icon
+                iconEl.innerHTML = `
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                `
+            }
+        }
+
+        function setupDropZone() {
+            const dropZone = document.getElementById('dropZone')
+            const fileInput = document.getElementById('fileInput')
+
+            dropZone.addEventListener('click', () => fileInput.click())
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault()
+                dropZone.classList.add('dragover')
+            })
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover')
+            })
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault()
+                dropZone.classList.remove('dragover')
+                handleFiles(e.dataTransfer.files)
+            })
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files)
+            })
+        }
+
+        function handleFiles(files) {
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp']
+            const maxSize = 20 * 1024 * 1024 // 20MB
+
+            for (const file of files) {
+                if (!allowedTypes.includes(file.type)) {
+                    showMessage(`Tipo no soportado: ${file.name}`, 'error')
+                    continue
+                }
+                if (file.size > maxSize) {
+                    showMessage(`Archivo muy grande: ${file.name} (máx. 20MB)`, 'error')
+                    continue
+                }
+                // Check for duplicates
+                if (uploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    continue
+                }
+                uploadedFiles.push(file)
+            }
+
+            renderFileList()
+            updateEnviarButton()
+        }
+
+        function renderFileList() {
+            const fileList = document.getElementById('fileList')
+            if (uploadedFiles.length === 0) {
+                fileList.innerHTML = ''
+                return
+            }
+
+            fileList.innerHTML = uploadedFiles.map((file, index) => `
+                <div class="file-item">
+                    <div class="file-item-info">
+                        <span class="file-item-name">${file.name}</span>
+                        <span class="file-item-size">${formatFileSize(file.size)}</span>
+                    </div>
+                    <button class="file-remove" onclick="removeFile(${index})">&times;</button>
+                </div>
+            `).join('')
+        }
+
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1)
+            renderFileList()
+            updateEnviarButton()
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B'
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+        }
+
+        function updateEnviarButton() {
+            const btn = document.getElementById('btnEnviar')
+            if (btn) {
+                btn.disabled = uploadedFiles.length === 0
+            }
+        }
+
+        async function enviarArchivos(requestId) {
+            if (uploadedFiles.length === 0) return
+
+            const req = requestsData.find(r => r.id === requestId)
+            if (!req) return
+
+            const btn = document.getElementById('btnEnviar')
+            const progress = document.getElementById('uploadProgress')
+            const progressBar = document.getElementById('progressBar')
+            const progressText = document.getElementById('progressText')
+
+            btn.classList.add('loading')
+            btn.disabled = true
+            progress.classList.add('show')
+
+            const deliveryMethods = parseDeliveryMethods(req.delivery_method)
+            const results = { email: null, jogi: null }
+            let processed = 0
+            const total = uploadedFiles.length * deliveryMethods.length
+
+            try {
+                // Create FormData with all files
+                const formData = new FormData()
+                formData.append('requestId', requestId)
+                formData.append('email', req.email)
+                formData.append('deliveryMethods', JSON.stringify(deliveryMethods))
+
+                for (const file of uploadedFiles) {
+                    formData.append('files', file)
+                }
+
+                progressText.textContent = 'Enviando archivos...'
+                progressBar.style.width = '20%'
+
+                const response = await fetch(`/api/admin/deliver-files/${requestId}`, {
+                    method: 'POST',
+                    body: formData
+                })
+
+                const data = await response.json()
+
+                progressBar.style.width = '100%'
+
+                if (response.status === 401) {
+                    window.location.href = '/admin/login'
+                    return
+                }
+
+                if (data.success) {
+                    let successMsg = `${uploadedFiles.length} archivo(s) enviado(s)`
+                    if (data.results) {
+                        const parts = []
+                        if (data.results.email?.success) parts.push('Email')
+                        if (data.results.jogi?.success) parts.push('Jogi')
+                        if (parts.length > 0) {
+                            successMsg += ` via ${parts.join(' y ')}`
+                        }
+                    }
+                    showMessage(successMsg, 'success')
+                    uploadedFiles = []
+                    renderFileList()
+                    closeModal()
+                } else {
+                    showMessage(data.error || 'Error al enviar archivos', 'error')
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error')
+            } finally {
+                btn.classList.remove('loading')
+                btn.disabled = uploadedFiles.length === 0
+                progress.classList.remove('show')
+                progressBar.style.width = '0%'
+            }
         }
 
         function closeModal() {
