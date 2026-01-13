@@ -43,17 +43,22 @@
         .requests-table th {
             background: #0e7490;
             color: white;
-            padding: 12px;
+            padding: 12px 16px;
             text-align: left;
+            font-weight: 600;
         }
 
         .requests-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
         }
 
-        .requests-table tr:hover {
-            background: #f8f9fa;
+        .requests-table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .requests-table tbody tr:last-child td {
+            border-bottom: none;
         }
 
         .status-badge {
@@ -130,7 +135,7 @@
         }
 
         .btn-view:hover {
-            background: #5a6268;
+            background: #0e7490;
         }
 
         .btn-delete {
@@ -161,28 +166,42 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(4px);
         }
 
         .modal.show {
             display: flex;
             align-items: center;
             justify-content: center;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .modal-content {
-            background: white;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 16px;
             width: 90%;
-            max-width: 800px;
+            max-width: 820px;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid #dee2e6;
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+            border-radius: 16px 16px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -190,33 +209,56 @@
 
         .modal-header h2 {
             margin: 0;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-header h2::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #34d399;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #34d399;
         }
 
         .modal-close {
-            background: none;
+            background: rgba(255, 255, 255, 0.2);
             border: none;
-            font-size: 1.5rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            font-size: 1.25rem;
             cursor: pointer;
-            color: #6c757d;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
         }
 
         .modal-close:hover {
-            color: #000;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
         }
 
         .modal-body {
-            padding: 20px;
+            padding: 20px 24px;
         }
 
         .credentials-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            gap: 12px 20px;
             margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 6px;
+            padding: 16px;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
         }
 
         .cred-item {
@@ -225,15 +267,18 @@
         }
 
         .cred-label {
-            font-size: 0.75rem;
-            color: #6c757d;
+            font-size: 0.7rem;
+            color: #64748b;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
             margin-bottom: 4px;
+            font-weight: 600;
         }
 
         .cred-value {
-            font-size: 1rem;
-            font-weight: 500;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1e293b;
             word-break: break-word;
         }
 
@@ -244,61 +289,82 @@
         }
 
         .password-text {
-            font-family: monospace;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
             letter-spacing: 2px;
+            color: #475569;
         }
 
         .password-toggle {
-            background: none;
-            border: none;
+            background: white;
+            border: 1px solid #e2e8f0;
             cursor: pointer;
-            padding: 4px;
-            color: #6c757d;
+            padding: 6px;
+            color: #64748b;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border-radius: 4px;
+            border-radius: 6px;
             transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .password-toggle:hover {
-            background: #e9ecef;
-            color: #0e7490;
+            background: #0e7490;
+            color: white;
+            border-color: #0e7490;
+            transform: scale(1.05);
         }
 
         .password-toggle svg {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
         }
 
         .docs-table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .docs-table th {
-            background: #0e7490;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
             color: white;
-            padding: 10px;
+            padding: 10px 12px;
             text-align: left;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .docs-table td {
-            padding: 10px;
-            border-bottom: 1px solid #dee2e6;
+            padding: 10px 12px;
+            background: white;
+            border-bottom: 1px solid #f1f5f9;
         }
 
-        .docs-table tr:hover {
-            background: #f8f9fa;
+        .docs-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .docs-table tr:hover td {
+            background: #f8fafc;
         }
 
         .docs-table a {
-            color: #0e7490;
+            color: #0891b2;
             text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
         }
 
         .docs-table a:hover {
+            color: #0e7490;
             text-decoration: underline;
         }
 
@@ -351,42 +417,110 @@
             border-left: 4px solid #28a745;
         }
 
+        /* Two-column layout for docs and delivery */
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+
+        .modal-grid h3,
+        .modal-grid h4 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            color: #1e293b;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-grid h3::before,
+        .modal-grid h4::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+            border-radius: 2px;
+        }
+
+        @media (max-width: 700px) {
+            .modal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* Drag & Drop Zone */
         .drop-zone {
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            padding: 30px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 20px 15px;
             text-align: center;
-            margin: 20px 0;
-            background: #fafafa;
+            margin: 10px 0;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drop-zone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(14, 116, 144, 0.05) 0%, rgba(8, 145, 178, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .drop-zone:hover::before,
+        .drop-zone.dragover::before {
+            opacity: 1;
+        }
+
+        .drop-zone:hover {
+            border-color: #0891b2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(14, 116, 144, 0.15);
         }
 
         .drop-zone.dragover {
             border-color: #0e7490;
-            background: #e0f7fa;
+            background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
+            border-style: solid;
         }
 
         .drop-zone-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
+            font-size: 28px;
+            margin-bottom: 6px;
+            filter: grayscale(0.3);
+            transition: all 0.3s;
+        }
+
+        .drop-zone:hover .drop-zone-icon {
+            filter: grayscale(0);
+            transform: scale(1.1);
         }
 
         .drop-zone-text {
-            color: #666;
-            font-size: 1rem;
-            margin-bottom: 5px;
+            color: #475569;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 4px;
         }
 
         .drop-zone-hint {
-            color: #999;
-            font-size: 0.85rem;
+            color: #94a3b8;
+            font-size: 0.75rem;
         }
 
         .file-list {
-            margin: 15px 0;
-            max-height: 200px;
+            margin: 10px 0;
+            max-height: 100px;
             overflow-y: auto;
         }
 
@@ -395,60 +529,73 @@
             align-items: center;
             justify-content: space-between;
             padding: 8px 12px;
-            background: #f8f9fa;
-            border-radius: 4px;
+            background: white;
+            border-radius: 8px;
             margin-bottom: 6px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+        }
+
+        .file-item:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .file-item-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+        }
+
+        .file-item-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
         }
 
         .file-item-name {
             font-weight: 500;
-            max-width: 300px;
+            font-size: 0.85rem;
+            color: #1e293b;
+            max-width: 150px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
         .file-item-size {
-            color: #666;
-            font-size: 0.85rem;
+            color: #94a3b8;
+            font-size: 0.75rem;
         }
 
         .file-remove {
             background: none;
             border: none;
-            color: #dc3545;
+            color: #94a3b8;
             cursor: pointer;
-            font-size: 1.2rem;
-            padding: 0 5px;
+            font-size: 1rem;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
         }
 
         .file-remove:hover {
-            color: #c82333;
+            color: #ef4444;
+            background: #fef2f2;
         }
 
         /* Delivery Methods in Modal */
-        .delivery-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #dee2e6;
-        }
-
-        .delivery-section h4 {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
         .delivery-methods {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
@@ -456,20 +603,29 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+
+        .delivery-badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .delivery-badge.email {
-            background: #e3f2fd;
-            color: #1565c0;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            border: 1px solid rgba(59, 130, 246, 0.2);
         }
 
         .delivery-badge.jogi {
-            background: #e8f5e9;
-            color: #2e7d32;
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #166534;
+            border: 1px solid rgba(34, 197, 94, 0.2);
         }
 
         /* Enviar Button */
@@ -761,55 +917,57 @@
                     </div>
                 </div>
 
-                <h3>Documentos Solicitados</h3>
-                <table class="docs-table">
-                    <thead>
-                        <tr>
-                            <th>Documento</th>
-                            <th>URL</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${docs.map(docId => `
-                            <tr>
-                                <td>${docId}</td>
-                                <td><a href="${documentUrls[docId] || '#'}" target="_blank">${documentUrls[docId] || 'N/A'}</a></td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                <div class="modal-grid">
+                    <div>
+                        <h3>Documentos Solicitados</h3>
+                        <table class="docs-table">
+                            <thead>
+                                <tr>
+                                    <th>Documento</th>
+                                    <th>URL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${docs.map(docId => `
+                                    <tr>
+                                        <td>${docId}</td>
+                                        <td><a href="${documentUrls[docId] || '#'}" target="_blank">${documentUrls[docId] || 'N/A'}</a></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
 
-                <div class="delivery-section">
-                    <h4>Método de Entrega</h4>
-                    <div class="delivery-methods">
-                        ${deliveryMethods.includes('email') ? '<span class="delivery-badge email">📧 Email</span>' : ''}
-                        ${deliveryMethods.includes('jogi') ? '<span class="delivery-badge jogi">📁 Jogi</span>' : ''}
-                        ${deliveryMethods.length === 0 ? '<span style="color: #999;">No especificado</span>' : ''}
-                    </div>
-                </div>
-
-                <div class="delivery-section">
-                    <h4>Subir Archivos para Entregar</h4>
-                    <div class="drop-zone" id="dropZone">
-                        <div class="drop-zone-icon">📄</div>
-                        <div class="drop-zone-text">Arrastra archivos aquí o haz clic para seleccionar</div>
-                        <div class="drop-zone-hint">PDF, JPG, PNG (máx. 20MB por archivo)</div>
-                        <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp" style="display: none;">
-                    </div>
-                    <div class="file-list" id="fileList"></div>
-
-                    <div class="upload-progress" id="uploadProgress">
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" id="progressBar"></div>
+                        <h4 style="margin-top: 16px;">Método de Entrega</h4>
+                        <div class="delivery-methods">
+                            ${deliveryMethods.includes('email') ? '<span class="delivery-badge email">📧 Email</span>' : ''}
+                            ${deliveryMethods.includes('jogi') ? '<span class="delivery-badge jogi">📁 Jogi</span>' : ''}
+                            ${deliveryMethods.length === 0 ? '<span style="color: #999;">No especificado</span>' : ''}
                         </div>
-                        <div class="progress-text" id="progressText">Procesando...</div>
                     </div>
 
-                    <button class="btn-enviar" id="btnEnviar" onclick="enviarArchivos(${req.id})" disabled>
-                        <span class="spinner"></span>
-                        <span class="btn-text">Enviar Archivos</span>
-                    </button>
+                    <div>
+                        <h4>Subir Archivos</h4>
+                        <div class="drop-zone" id="dropZone">
+                            <div class="drop-zone-icon">📄</div>
+                            <div class="drop-zone-text">Arrastra archivos o haz clic</div>
+                            <div class="drop-zone-hint">PDF, JPG, PNG (máx. 20MB)</div>
+                            <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp" style="display: none;">
+                        </div>
+                        <div class="file-list" id="fileList"></div>
+                    </div>
                 </div>
+
+                <div class="upload-progress" id="uploadProgress">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Procesando...</div>
+                </div>
+
+                <button class="btn-enviar" id="btnEnviar" onclick="enviarArchivos(${req.id})" disabled>
+                    <span class="spinner"></span>
+                    <span class="btn-text">Enviar Archivos</span>
+                </button>
             `
 
             // Setup drag & drop
@@ -909,15 +1067,20 @@
                 return
             }
 
-            fileList.innerHTML = uploadedFiles.map((file, index) => `
+            fileList.innerHTML = uploadedFiles.map((file, index) => {
+                const ext = file.name.split('.').pop().toUpperCase()
+                return `
                 <div class="file-item">
                     <div class="file-item-info">
-                        <span class="file-item-name">${file.name}</span>
-                        <span class="file-item-size">${formatFileSize(file.size)}</span>
+                        <div class="file-item-icon">${ext}</div>
+                        <div>
+                            <div class="file-item-name">${file.name}</div>
+                            <div class="file-item-size">${formatFileSize(file.size)}</div>
+                        </div>
                     </div>
                     <button class="file-remove" onclick="removeFile(${index})">&times;</button>
                 </div>
-            `).join('')
+            `}).join('')
         }
 
         function removeFile(index) {

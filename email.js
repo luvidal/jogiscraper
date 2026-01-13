@@ -25,7 +25,7 @@ export async function sendEmail({ to, subject, html, attachments = [] }) {
 
   try {
     const result = await transport.sendMail({
-      from: 'no-reply@jogi.cl',
+      from: 'JogiScraper <documentos@jogi.cl>',
       to: to.trim().toLowerCase(),
       subject,
       html,

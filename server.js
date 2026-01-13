@@ -427,13 +427,14 @@ apiRouter.post('/admin/deliver-files/:id', requireAdmin, upload.array('files', 2
             })
           }
 
+          // Use getBuffer() for proper streaming with native fetch
           const response = await fetch(`${jogiUrl}/api/v1/files/external-upload`, {
             method: 'POST',
             headers: {
               'x-api-secret': jogiSecret,
               ...formData.getHeaders()
             },
-            body: formData
+            body: formData.getBuffer()
           })
 
           const data = await response.json()
