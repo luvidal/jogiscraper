@@ -50,7 +50,7 @@ app.use(session({
 
 
 // Enable livereload in development (must be before static files)
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
   app.use(connectLivereload())
   const liveReloadServer = livereload.createServer({
     exts: ['html', 'css', 'js', 'png', 'gif', 'jpg']
@@ -524,5 +524,11 @@ app.get('*', (_, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'))
 })
 
+// Export app for testing
+export { app }
+
+// Start server only when run directly
 const PORT = process.env.PORT || 3001
-app.listen(PORT, () => console.log(`jogiscraper ready on http://localhost:${PORT}`))
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => console.log(`jogiscraper ready on http://localhost:${PORT}`))
+}

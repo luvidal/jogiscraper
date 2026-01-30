@@ -141,7 +141,7 @@ export function createRequest(rut, email, documents, claveunica = null, document
     VALUES (?, ?, ?, 'pending', ?, ?, ?)
   `)
   const info = stmt.run(rut, email, JSON.stringify(documents), claveunica, documento, JSON.stringify(deliveryMethodArray))
-  return info.lastInsertRowid
+  return Number(info.lastInsertRowid)
 }
 
 export function getPendingRequestsByRut(rut) {
