@@ -37,3 +37,26 @@ Log of user requests and changes made by Claude.
 - Added `sendNewRequestNotification()` function in `email.js` - sends HTML email with table containing: ID, RUT, documento, email, delivery method, date/time, and list of requested documents
 - Updated `server.js` to call `sendNewRequestNotification()` immediately when a request is created (non-blocking)
 - Email is sent via AWS SES using existing credentials
+
+---
+
+## 2026-01-30
+
+### Test Suite Implementation
+
+**Request**: Create a test battery to verify API endpoints work, requests are stored correctly, and emails are sent to luvidal@edictus.com.
+
+**Changes**:
+- Added `vitest` and `supertest` as dev dependencies
+- Added test scripts to `package.json`: `npm test` and `npm run test:watch`
+- Created `vitest.config.js` with isolation settings for shared DB access
+- Created `tests/helpers/setup.js` - Test utilities and constants
+- Created `tests/api.test.js` - API endpoint tests (9 tests)
+  - Health check, documents list, single document, submit request validation
+- Created `tests/e2e.test.js` - End-to-end flow tests (4 tests)
+  - Submit request → DB storage → email notification
+  - Duplicate request rejection
+  - Same RUT with different services
+- Modified `server.js` to export `app` and skip livereload in test mode
+- Modified `db.js` to return Number instead of BigInt for request IDs
+- Real emails are sent to luvidal@edictus.com during E2E tests

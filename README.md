@@ -137,6 +137,70 @@ npm run dev
 npm start
 ```
 
+## Production Server (AWS Lightsail)
+
+The production server runs on AWS Lightsail.
+
+### SSH Access
+
+```bash
+# Using SSH config alias
+ssh jogiscraper
+
+# Or directly
+ssh -i ~/.ssh/jogiscraper.pem ubuntu@54.167.89.250
+
+# Alternative hostname
+ssh scraper.jogi.cl
+```
+
+### SSH Config (~/.ssh/config)
+
+```
+Host jogiscraper
+  HostName 54.167.89.250
+  User ubuntu
+  IdentityFile ~/.ssh/jogiscraper.pem
+
+Host scraper.jogi.cl
+  HostName scraper.jogi.cl
+  User ubuntu
+  IdentityFile ~/.ssh/jogiscraper.pem
+```
+
+### Server Details
+
+| Property | Value |
+|----------|-------|
+| IP Address | `54.167.89.250` |
+| Hostname | `scraper.jogi.cl` |
+| User | `ubuntu` |
+| SSH Key | `~/.ssh/jogiscraper.pem` |
+| App Directory | `/home/ubuntu/jogiscraper` |
+| Process Manager | PM2 |
+
+### Common Commands
+
+```bash
+# Connect to server
+ssh jogiscraper
+
+# View app logs
+pm2 logs jogiscraper
+
+# Restart app
+pm2 restart jogiscraper
+
+# Check status
+pm2 status
+
+# View environment variables
+cat /home/ubuntu/jogiscraper/.env
+
+# Pull latest code and restart
+cd /home/ubuntu/jogiscraper && git pull && pm2 restart jogiscraper
+```
+
 ## Key Features
 
 - **Non-blocking Processing**: Requests return immediately; documents processed in background

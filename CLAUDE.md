@@ -49,3 +49,23 @@ After completing a user request, add an entry to `.claude/REQUIREMENTS_LOG.md` d
 - Node.js with ES modules
 - Development: `npm run dev` (nodemon + livereload)
 - Production: `npm start`
+
+## Deployment (AWS Lightsail)
+
+- **Host**: `jogiscraper` (SSH alias) or `54.167.89.250`
+- **User**: `ubuntu`
+- **App path**: `/home/ubuntu/jogiscraper`
+- **Process manager**: PM2
+
+### Quick commands
+
+```bash
+# Check production version
+ssh jogiscraper "cd /home/ubuntu/jogiscraper && git log --oneline -1"
+
+# Deploy latest
+ssh jogiscraper "cd /home/ubuntu/jogiscraper && git pull && pm2 restart jogiscraper"
+
+# View logs
+ssh jogiscraper "pm2 logs jogiscraper"
+```
