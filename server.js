@@ -3,8 +3,6 @@ import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { spawn } from 'child_process'
-import livereload from 'livereload'
-import connectLivereload from 'connect-livereload'
 import session from 'express-session'
 import bcrypt from 'bcrypt'
 import multer from 'multer'
@@ -51,8 +49,10 @@ app.use(session({
 
 // Enable livereload in development (must be before static files)
 if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
-  app.use(connectLivereload())
-  const liveReloadServer = livereload.createServer({
+  const livereload = await import('livereload')
+  const connectLivereload = await import('connect-livereload')
+  app.use(connectLivereload.default())
+  const liveReloadServer = livereload.default.createServer({
     exts: ['html', 'css', 'js', 'png', 'gif', 'jpg']
   })
   liveReloadServer.watch(path.join(__dirname, 'public'))
