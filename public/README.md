@@ -33,6 +33,7 @@ Frontend logic and validation:
 - URL parameter pre-fill (`?from=`, `?requester=`, `?email=`)
 - Password visibility toggle
 - Real-time RUT validation and formatting
+- Inline validation feedback on credentials step
 - Multi-step navigation with validation gates
 
 ### styles.css

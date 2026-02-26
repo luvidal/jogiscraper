@@ -76,3 +76,10 @@ Log of user requests and changes made by Claude.
 
 **Changes**:
 - Made `documento` required only for services that need it (matrimonio/nacimiento) in `server.js`.
+
+### Credentials Step Feedback
+
+**Request**: Provide clear feedback when Step 2 validation fails.
+
+**Changes**:
+- Added inline error message for credentials validation in `public/index.html` and `public/app.js`.

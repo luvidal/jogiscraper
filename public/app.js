@@ -3,6 +3,7 @@ const servicesContainer = document.getElementById('servicesContainer');
 const servicesError = document.getElementById('servicesError');
 const carpetaFields = document.getElementById('carpetaFields');
 const submitBtn = document.getElementById('submitBtn');
+const credentialsError = document.getElementById('credentialsError');
 const btnText = submitBtn.querySelector('.btn-text');
 const btnLoader = submitBtn.querySelector('.btn-loader');
 const resultDiv = document.getElementById('result');
@@ -345,6 +346,11 @@ function showStep(step) {
         updateNextButtonState();
     }
 
+    // Clear credentials error when entering step 2
+    if (step === 2 && credentialsError) {
+        credentialsError.style.display = 'none';
+    }
+
     // Populate confirmation summary on step 4
     if (step === 4) {
         populateConfirmationSummary();
@@ -358,6 +364,13 @@ function showStep(step) {
             emailPreviewInStep.textContent = email;
         }
     }
+}
+
+function showCredentialsError(message) {
+    if (!credentialsError) return;
+    credentialsError.textContent = message;
+    credentialsError.style.display = 'block';
+    credentialsError.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function validateStep(step) {
@@ -378,6 +391,10 @@ function validateStep(step) {
         const documento = document.getElementById('documento');
         const email = document.getElementById('email');
 
+        if (credentialsError) {
+            credentialsError.style.display = 'none';
+        }
+
         const fields = [rut, claveunica];
         if (documento.required) {
             fields.push(documento);
@@ -389,6 +406,7 @@ function validateStep(step) {
         for (const field of fields) {
             if (!field.value.trim()) {
                 field.reportValidity();
+                showCredentialsError(`Completa el campo: ${field.previousElementSibling?.textContent || 'requerido'}`);
                 return false;
             }
         }
@@ -398,12 +416,14 @@ function validateStep(step) {
             rut.setCustomValidity('RUT inválido');
             rut.reportValidity();
             rut.setCustomValidity(''); // Reset for next validation
+            showCredentialsError('RUT inválido. Verifica el formato y el dígito verificador.');
             return false;
         }
 
         // Validate email format if required
         if (email.required && !email.checkValidity()) {
             email.reportValidity();
+            showCredentialsError('Email inválido. Verifica el formato.');
             return false;
         }
 
@@ -413,6 +433,7 @@ function validateStep(step) {
 
             if (!username.value.trim()) {
                 username.reportValidity();
+                showCredentialsError('Completa el campo: Nombre.');
                 return false;
             }
         }
