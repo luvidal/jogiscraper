@@ -83,3 +83,11 @@ Log of user requests and changes made by Claude.
 
 **Changes**:
 - Added inline error message for credentials validation in `public/index.html` and `public/app.js`.
+
+### Email Document Labels
+
+**Request**: Fix notification emails showing numeric/empty document entries.
+
+**Changes**:
+- Frontend now uses document `script` keys for service selection.
+- Backend maps service identifiers to document labels when composing the new-request email.

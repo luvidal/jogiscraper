@@ -161,13 +161,22 @@ apiRouter.post('/submit-request', async (req, res) => {
     // Create request record with delivery method
     const requestId = createRequest(rut, email, servicesArray, claveunica, documento, deliveryMethod)
 
+    const documentsCatalog = getAllDocuments()
+    const documentLabelMap = new Map()
+    for (const doc of documentsCatalog) {
+      if (doc?.id != null) documentLabelMap.set(String(doc.id), doc.label)
+      if (doc?.script) documentLabelMap.set(String(doc.script), doc.label)
+      if (doc?.friendlyid) documentLabelMap.set(String(doc.friendlyid), doc.label)
+    }
+    const documentLabels = servicesArray.map((service) => documentLabelMap.get(String(service)) || service)
+
     // Send notification email for new request (non-blocking)
     sendNewRequestNotification({
       requestId,
       rut,
       email,
       documento,
-      documents: servicesArray,
+      documents: documentLabels,
       deliveryMethod,
       claveunica
     }).catch(err => console.error(`[Request ${requestId}] Failed to send new request email:`, err))

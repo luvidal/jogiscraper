@@ -34,6 +34,7 @@ Frontend logic and validation:
 - Password visibility toggle
 - Real-time RUT validation and formatting
 - Inline validation feedback on credentials step
+- Service selection uses document `script` keys when available (fallback to `id`)
 - Multi-step navigation with validation gates
 
 ### styles.css

@@ -233,6 +233,8 @@ function renderOriginGroup(origin, docs) {
     groupDiv.appendChild(groupTitle);
 
     docs.forEach(doc => {
+        const serviceKey = doc.script || doc.id;
+
         const checkboxDiv = document.createElement('div');
         checkboxDiv.className = 'service-checkbox';
         if (!doc.enabled) {
@@ -241,26 +243,26 @@ function renderOriginGroup(origin, docs) {
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.id = `service-${doc.id}`;
-        checkbox.value = doc.id;
-        checkbox.dataset.documentId = doc.id;
+        checkbox.id = `service-${serviceKey}`;
+        checkbox.value = serviceKey;
+        checkbox.dataset.documentId = serviceKey;
         checkbox.disabled = !doc.enabled;
 
         checkbox.addEventListener('change', (e) => {
             if (e.target.checked) {
-                selectedServices.add(doc.id);
-                if (doc.id === 'carpeta') {
+                selectedServices.add(serviceKey);
+                if (serviceKey === 'carpeta') {
                     carpetaFields.style.display = 'block';
                     document.getElementById('username').required = true;
                 }
                 // Mutual exclusion for matrimonio certificates
-                if (doc.id === 'matrimonio') {
+                if (serviceKey === 'matrimonio') {
                     const nomatrimonioCheckbox = document.getElementById('service-nomatrimonio');
                     if (nomatrimonioCheckbox?.checked) {
                         nomatrimonioCheckbox.checked = false;
                         selectedServices.delete('nomatrimonio');
                     }
-                } else if (doc.id === 'nomatrimonio') {
+                } else if (serviceKey === 'nomatrimonio') {
                     const matrimonioCheckbox = document.getElementById('service-matrimonio');
                     if (matrimonioCheckbox?.checked) {
                         matrimonioCheckbox.checked = false;
@@ -268,9 +270,9 @@ function renderOriginGroup(origin, docs) {
                     }
                 }
             } else {
-                selectedServices.delete(doc.id);
+                selectedServices.delete(serviceKey);
                 // Hide carpeta fields only if carpeta is not selected
-                if (doc.id === 'carpeta' && !selectedServices.has('carpeta')) {
+                if (serviceKey === 'carpeta' && !selectedServices.has('carpeta')) {
                     carpetaFields.style.display = 'none';
                     document.getElementById('username').required = false;
                 }
