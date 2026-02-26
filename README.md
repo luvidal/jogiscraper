@@ -2,6 +2,8 @@
 
 Chilean government document automation tool that retrieves official documents through web scraping and API integrations.
 
+**Slim onboarding:** start with `AI_ONBOARDING.md` for minimal context.
+
 ## Overview
 
 JogiScraper automates the retrieval of Chilean government documents by interacting with various government portals (SII, AFC, CMF, Registro Civil) using browser automation (Puppeteer) and API calls.

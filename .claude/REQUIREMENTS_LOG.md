@@ -91,3 +91,11 @@ Log of user requests and changes made by Claude.
 **Changes**:
 - Frontend now uses document `script` keys for service selection.
 - Backend maps service identifiers to document labels when composing the new-request email.
+
+### Slim Onboarding Doc
+
+**Request**: Keep context small and improve AI onboarding.
+
+**Changes**:
+- Added `AI_ONBOARDING.md` with minimal repo context and pointers.
+- Linked it from `README.md`.
