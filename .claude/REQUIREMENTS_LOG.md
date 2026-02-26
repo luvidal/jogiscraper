@@ -69,3 +69,10 @@ Log of user requests and changes made by Claude.
 
 **Changes**:
 - Added startup migration in `db.js` to add `documents.enabled` if missing and backfill defaults.
+
+### Submit Request Validation Fix
+
+**Request**: Fix production "Missing required fields" when documento is not applicable.
+
+**Changes**:
+- Made `documento` required only for services that need it (matrimonio/nacimiento) in `server.js`.

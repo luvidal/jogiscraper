@@ -136,7 +136,10 @@ apiRouter.post('/submit-request', async (req, res) => {
   try {
     const { rut, claveunica, documento, email, services, deliveryMethod = 'email' } = req.body
 
-    if (!rut || !claveunica || !documento || !email || !services || services.length === 0) {
+    const servicesArray = Array.isArray(services) ? services : []
+    const requiresDocumento = servicesArray.some((s) => s === 'matrimonio' || s === 'nacimiento')
+
+    if (!rut || !claveunica || !email || servicesArray.length === 0 || (requiresDocumento && !documento)) {
       return res.status(400).json({ success: false, error: 'Missing required fields' })
     }
 
@@ -145,7 +148,7 @@ apiRouter.post('/submit-request', async (req, res) => {
     if (pendingRequests.length > 0) {
       for (const pending of pendingRequests) {
         const pendingServices = JSON.parse(pending.documents)
-        const duplicates = services.filter(s => pendingServices.includes(s))
+        const duplicates = servicesArray.filter(s => pendingServices.includes(s))
         if (duplicates.length > 0) {
           return res.status(409).json({
             success: false,
@@ -156,7 +159,7 @@ apiRouter.post('/submit-request', async (req, res) => {
     }
 
     // Create request record with delivery method
-    const requestId = createRequest(rut, email, services, claveunica, documento, deliveryMethod)
+    const requestId = createRequest(rut, email, servicesArray, claveunica, documento, deliveryMethod)
 
     // Send notification email for new request (non-blocking)
     sendNewRequestNotification({
@@ -164,7 +167,7 @@ apiRouter.post('/submit-request', async (req, res) => {
       rut,
       email,
       documento,
-      documents: services,
+      documents: servicesArray,
       deliveryMethod,
       claveunica
     }).catch(err => console.error(`[Request ${requestId}] Failed to send new request email:`, err))
