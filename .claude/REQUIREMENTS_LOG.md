@@ -60,3 +60,12 @@ Log of user requests and changes made by Claude.
 - Modified `server.js` to export `app` and skip livereload in test mode
 - Modified `db.js` to return Number instead of BigInt for request IDs
 - Real emails are sent to luvidal@edictus.com during E2E tests
+
+## 2026-02-26
+
+### Production Documents Endpoint Fix
+
+**Request**: Fix production "Error cargando servicios" caused by missing `enabled` column.
+
+**Changes**:
+- Added startup migration in `db.js` to add `documents.enabled` if missing and backfill defaults.

@@ -51,6 +51,15 @@ async function initDatabase() {
   db.exec(createRequestsTableSQL)
   db.exec(createAdminsTableSQL)
 
+  // Backfill older schemas that predate the enabled column.
+  const documentColumns = db.prepare('PRAGMA table_info(documents)').all()
+  const hasEnabledColumn = documentColumns.some((col) => col.name === 'enabled')
+  if (!hasEnabledColumn) {
+    console.log('Adding missing documents.enabled column...')
+    db.exec('ALTER TABLE documents ADD COLUMN enabled INTEGER DEFAULT 1')
+    db.exec('UPDATE documents SET enabled = 1 WHERE enabled IS NULL')
+  }
+
   // Check if table is empty
   const count = db.prepare('SELECT COUNT(*) as count FROM documents').get()
 
